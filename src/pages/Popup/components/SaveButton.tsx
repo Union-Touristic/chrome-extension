@@ -134,13 +134,16 @@ const SaveButton = () => {
       window.close();
     }
   };
+
   return (
-    <Button
-      disabled={isLoading}
-      icon={isLoading ? <SpinningIcon /> : undefined}
-      onClick={handleSaveButtonClick}
-    >
-      {isLoading ? 'Отправка ...' : 'Сохранить в CRM'}
+    <Button disabled={isLoading} onClick={handleSaveButtonClick}>
+      {isLoading ? (
+        <>
+          <SpinningIcon /> Отправка …
+        </>
+      ) : (
+        'Сохранить в CRM'
+      )}
     </Button>
   );
 };

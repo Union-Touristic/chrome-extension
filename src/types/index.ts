@@ -1,3 +1,5 @@
+import React from 'react';
+
 export type Tour = {
   boardType: string;
   checkinDt: string;
@@ -24,7 +26,7 @@ export type Occupancy = {
   childrenCount: number;
 };
 
-export type HeroIcon = any; //TODO: Fix type for heroicons
+export type HeroIcon = (props: React.ComponentProps<'svg'>) => JSX.Element;
 
 export type SortConfig = {
   key: string;
