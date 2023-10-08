@@ -1,4 +1,8 @@
-import { collectTourOptions, createAddButton, createTTdElement } from './utils';
+import {
+  collectTourOptions,
+  createAddButton,
+  createTTdElement,
+} from './helpers';
 
 console.log('TOURVISOR content script works!');
 console.log('Must reload extension for modifications to take effect.');

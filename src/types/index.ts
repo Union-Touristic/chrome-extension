@@ -24,7 +24,7 @@ export type Occupancy = {
   childrenCount: number;
 };
 
-export type HeroIcon = any;
+export type HeroIcon = any; //TODO: Fix type for heroicons
 
 export type SortConfig = {
   key: string;
