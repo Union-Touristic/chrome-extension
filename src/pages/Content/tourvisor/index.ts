@@ -125,22 +125,23 @@ function handleTTBodyElementMutation(
     const hasButton = Boolean(
       tourResultItemElement.querySelector('.tour-collector-button')
     );
+    // if table already has button
     if (hasButton) return;
 
     const TTdElement = createTTdElement();
     const button = createAddButton();
 
-    button.addEventListener('click', (e) => {
+    const tourOptions = collectTourOptions(
+      hotelResultItemInfoElement,
+      tourResultItemElement
+    );
+    if (!tourOptions) throw new Error('tourOptions does not exist');
+
+    function handleButtonClick(e: MouseEvent) {
       e.stopPropagation();
 
       button.classList.add('tour-collector-button--added');
       button.disabled = true;
-
-      const tourOptions = collectTourOptions(
-        hotelResultItemInfoElement,
-        tourResultItemElement
-      );
-      if (!tourOptions) throw new Error('tourOptions does not exist');
 
       chrome.runtime
         .sendMessage<ToursMessenger, Tour[]>({
@@ -150,13 +151,31 @@ function handleTTBodyElementMutation(
         .then((tours) => {
           console.log(tours);
         });
-    });
+    }
+
+    // if this tour already in chrome storage
+    // then make button with '--added' css class and make it disabled
+    // do not add event listeneres
+    chrome.runtime
+      .sendMessage<ToursMessenger, Tour[]>({ type: 'retrieve' })
+      .then((toursInStorage) => {
+        toursInStorage.forEach((tour) => {
+          if (tour.id === tourOptions.id) {
+            button.classList.add('tour-collector-button--added');
+            button.disabled = true;
+            button.removeEventListener('click', handleButtonClick);
+          }
+        });
+      });
+
+    button.addEventListener('click', handleButtonClick);
 
     TTdElement.appendChild(button);
     tourResultItemElement.insertAdjacentElement('beforeend', TTdElement);
   });
 }
 
+// TODO: try to optimize this mutation
 function onElementChildListMutation(
   mutationList: MutationRecord[],
   callback: (mutation: MutationRecord) => void

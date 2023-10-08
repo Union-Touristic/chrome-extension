@@ -37,6 +37,12 @@ chrome.runtime.onMessage.addListener(
     sendResponse: (response: Tour[]) => void
   ): boolean => {
     switch (message.type) {
+      case 'retrieve':
+        getToursFromStorage().then((tours) => {
+          tours ? sendResponse(tours) : sendResponse(Array(0));
+        });
+        return true;
+
       case 'init':
         getToursFromStorage().then((tours) => {
           tours ? sendResponse(tours) : sendResponse(Array(0));
