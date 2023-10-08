@@ -1,3 +1,5 @@
+import { Tour } from '../../../types';
+import { ToursMessenger } from '../../../types/chrome-extesion';
 import {
   collectTourOptions,
   createAddButton,
@@ -139,6 +141,15 @@ function handleTTBodyElementMutation(
         tourResultItemElement
       );
       if (!tourOptions) throw new Error('tourOptions does not exist');
+
+      chrome.runtime
+        .sendMessage<ToursMessenger, Tour[]>({
+          type: 'add',
+          data: [tourOptions],
+        })
+        .then((value) => {
+          console.log(value);
+        });
 
       // chrome.runtime
       //   .sendMessage({ type: 'add tour', data: tourOptions })

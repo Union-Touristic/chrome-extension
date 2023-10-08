@@ -10,7 +10,6 @@ export type Tour = {
   hotelName: string;
   href: string;
   id: string;
-  initial_price: number;
   nights: number;
   occupancy: Occupancy;
   operator: string;
@@ -21,9 +20,9 @@ export type Tour = {
 };
 
 export type Occupancy = {
-  adultsCount: string;
-  childAges: [number, number][];
+  adultsCount: number;
   childrenCount: number;
+  childAges: number[];
 };
 
 export type HeroIcon = (props: React.ComponentProps<'svg'>) => JSX.Element;

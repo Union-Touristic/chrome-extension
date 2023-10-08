@@ -1,3 +1,6 @@
+import { Tour } from '../../../types';
+import { MD5 } from 'crypto-js';
+
 const TOUR_OPERATORS_MAP = {
   12: 'Pegas (KZ)',
   13: 'Anex Tour',
@@ -263,7 +266,7 @@ function getCheckinDate(tourResultItemElement: Element) {
   }
 }
 
-function getNights(tourResultItemElement: Element) {
+function getNights(tourResultItemElement: Element): number | undefined {
   const TVTourResultItemNightsElement = tourResultItemElement.querySelector(
     '.TVTourResultItemNights'
   );
@@ -271,7 +274,7 @@ function getNights(tourResultItemElement: Element) {
   if (TVTourResultItemNightsElement) {
     const textContent = TVTourResultItemNightsElement.textContent;
 
-    if (textContent) return textContent.trim();
+    if (textContent) return extractIntFromStr(textContent.trim());
   }
 }
 
@@ -334,7 +337,7 @@ function getCity() {
   }
 }
 
-function getOccupancy() {
+function getOccupancy(): Tour['occupancy'] | undefined {
   const occupancy =
     document.querySelector('.TVTourists') ||
     document.querySelector('.TVTouristsSelect .TVMainSelectContent');
@@ -349,10 +352,11 @@ function getOccupancy() {
   }
 
   if (match) {
+    const childAges: number[] = [];
     return {
-      adultsCount: match[0],
-      childrenCount: match[1] || 0,
-      childAges: null,
+      adultsCount: Number(match[0]),
+      childrenCount: Number(match[1]) || 0,
+      childAges: childAges,
     };
   }
 }
@@ -360,24 +364,33 @@ function getOccupancy() {
 export const collectTourOptions = (
   hotelResultItemInfoElement: Element,
   tourResultItemElement: Element
-) => {
-  return {
-    operator: getOperator(tourResultItemElement),
-    country: getCountry(),
-    region: getRegion(hotelResultItemInfoElement),
-    hotelName: getHotelName(hotelResultItemInfoElement),
-    href: getHotelHref(hotelResultItemInfoElement),
-    thumbnail: getThumbnail(hotelResultItemInfoElement),
-    description: getDescription(hotelResultItemInfoElement),
-    checkinDt: getCheckinDate(tourResultItemElement), //TODO: find more readable way to convert this result to Date
-    nights: getNights(tourResultItemElement),
-    boardType: getBoardType(tourResultItemElement),
-    roomType: getRoomType(tourResultItemElement),
-    price: getPrice(tourResultItemElement),
-    currency: getCurrency(tourResultItemElement),
-    city_from: getCity(),
-    occupancy: getOccupancy(),
+): Tour => {
+  const tourWithoutId: Omit<Tour, 'id'> = {
+    operator: getOperator(tourResultItemElement)!,
+    country: getCountry()!,
+    region: getRegion(hotelResultItemInfoElement)!,
+    hotelName: getHotelName(hotelResultItemInfoElement)!,
+    href: getHotelHref(hotelResultItemInfoElement)!,
+    thumbnail: getThumbnail(hotelResultItemInfoElement)!,
+    description: getDescription(hotelResultItemInfoElement)!,
+    checkinDt: getCheckinDate(tourResultItemElement)!, //TODO: find more readable way to convert this result to Date
+    nights: getNights(tourResultItemElement)!,
+    boardType: getBoardType(tourResultItemElement)!,
+    roomType: getRoomType(tourResultItemElement)!,
+    price: getPrice(tourResultItemElement)!,
+    currency: getCurrency(tourResultItemElement)!,
+    city_from: getCity()!,
+    occupancy: getOccupancy()!,
   };
+
+  const id = generateTourId(tourWithoutId);
+
+  const tour: Tour = {
+    ...tourWithoutId,
+    id,
+  };
+
+  return tour;
 };
 
 export const createAddButton = () => {
@@ -394,3 +407,9 @@ export const createTTdElement = () => {
   TTdElement.style.paddingLeft = '5px';
   return TTdElement;
 };
+
+function generateTourId(tourWithoutId: Omit<Tour, 'id'>): Tour['id'] {
+  const id = MD5(JSON.stringify(tourWithoutId)).toString();
+
+  return id;
+}
