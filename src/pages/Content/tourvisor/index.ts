@@ -147,17 +147,9 @@ function handleTTBodyElementMutation(
           type: 'add',
           data: [tourOptions],
         })
-        .then((value) => {
-          console.log(value);
+        .then((tours) => {
+          console.log(tours);
         });
-
-      // chrome.runtime
-      //   .sendMessage({ type: 'add tour', data: tourOptions })
-      //   .then(() => {
-      //     console.log(tourOptions);
-      //   });
-
-      console.log(tourOptions);
     });
 
     TTdElement.appendChild(button);

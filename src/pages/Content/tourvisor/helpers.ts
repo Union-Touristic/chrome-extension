@@ -337,7 +337,7 @@ function getCity() {
   }
 }
 
-function getOccupancy(): Tour['occupancy'] | undefined {
+function getOccupancy(): Tour['occupancy'] {
   const occupancy =
     document.querySelector('.TVTourists') ||
     document.querySelector('.TVTouristsSelect .TVMainSelectContent');
@@ -352,13 +352,20 @@ function getOccupancy(): Tour['occupancy'] | undefined {
   }
 
   if (match) {
-    const childAges: number[] = [];
+    const childAges: number[] = []; // TODO: implement childAges data structure
+
     return {
       adultsCount: Number(match[0]),
       childrenCount: Number(match[1]) || 0,
       childAges: childAges,
     };
   }
+
+  return {
+    adultsCount: 0,
+    childrenCount: 0,
+    childAges: [],
+  };
 }
 
 export const collectTourOptions = (
@@ -366,21 +373,21 @@ export const collectTourOptions = (
   tourResultItemElement: Element
 ): Tour => {
   const tourWithoutId: Omit<Tour, 'id'> = {
-    operator: getOperator(tourResultItemElement)!,
-    country: getCountry()!,
-    region: getRegion(hotelResultItemInfoElement)!,
-    hotelName: getHotelName(hotelResultItemInfoElement)!,
-    href: getHotelHref(hotelResultItemInfoElement)!,
-    thumbnail: getThumbnail(hotelResultItemInfoElement)!,
-    description: getDescription(hotelResultItemInfoElement)!,
-    checkinDt: getCheckinDate(tourResultItemElement)!, //TODO: find more readable way to convert this result to Date
-    nights: getNights(tourResultItemElement)!,
-    boardType: getBoardType(tourResultItemElement)!,
-    roomType: getRoomType(tourResultItemElement)!,
-    price: getPrice(tourResultItemElement)!,
-    currency: getCurrency(tourResultItemElement)!,
-    city_from: getCity()!,
-    occupancy: getOccupancy()!,
+    operator: getOperator(tourResultItemElement) || 'NotFound',
+    country: getCountry() || 'NotFound',
+    region: getRegion(hotelResultItemInfoElement) || 'NotFound',
+    hotelName: getHotelName(hotelResultItemInfoElement) || 'NotFound',
+    href: getHotelHref(hotelResultItemInfoElement) || 'NotFound',
+    thumbnail: getThumbnail(hotelResultItemInfoElement) || 'NotFound',
+    description: getDescription(hotelResultItemInfoElement) || 'NotFound',
+    checkinDt: getCheckinDate(tourResultItemElement) || 'NotFound', //TODO: find more readable way to convert this result to Date
+    nights: getNights(tourResultItemElement) || 0,
+    boardType: getBoardType(tourResultItemElement) || 'NotFound',
+    roomType: getRoomType(tourResultItemElement) || 'NotFound',
+    price: getPrice(tourResultItemElement) || 0,
+    currency: getCurrency(tourResultItemElement) || 'NotFound',
+    city_from: getCity() || 'NotFound',
+    occupancy: getOccupancy(),
   };
 
   const id = generateTourId(tourWithoutId);
