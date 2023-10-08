@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "Tour Collector",
+  "description": "Расширение chrome для создания подборок туров",
+  "options_page": "options.html",
+  "background": { "service_worker": "background.bundle.js" },
+  "permissions": ["storage", "tabs", "cookies"],
+  "incognito": "split",
+  "action": {
+    "default_title": "Открыть расширение",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon-16.png",
+      "32": "icon-32.png",
+      "48": "icon-48.png",
+      "128": "icon-128.png"
+    }
+  },
+  "icons": {
+    "16": "icon-16.png",
+    "32": "icon-32.png",
+    "48": "icon-48.png",
+    "128": "icon-128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://tourvisor.ru/*"],
+      "js": ["contentScriptTourvisor.bundle.js"],
+      "css": ["content.styles.css"]
+    }
+  ],
+  "devtools_page": "devtools.html",
+  "web_accessible_resources": [
+    {
+      "resources": ["done-24x24.svg", "plus-24x24.svg"],
+      "matches": ["*://tourvisor.ru/*"],
+      "extension_ids": []
+    }
+  ]
+}
