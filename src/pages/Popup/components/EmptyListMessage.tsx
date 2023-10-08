@@ -3,7 +3,7 @@ import { PlusCircleIcon } from '@heroicons/react/24/outline';
 
 import { useToursDispatch } from '../context/ToursContext';
 
-import { tours } from '../../../data/tours';
+import { tours } from '../../../mock-data/tours';
 
 import Button from './Button';
 import { ToursMessenger } from '../../../types/chrome-extesion';
