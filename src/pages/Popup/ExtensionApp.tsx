@@ -1,9 +1,6 @@
 import React, { useEffect } from 'react';
 
-import {
-  useAuthentication,
-  useAuthenticationDispatch,
-} from './context/AuthenticationContext';
+import { useAuthentication } from './context/AuthenticationContext';
 import { TableProvider } from './context/TableContext';
 import { useTours, useToursDispatch } from './context/ToursContext';
 import EmptyListMessage from './components/EmptyListMessage';
@@ -14,16 +11,9 @@ import { Tour } from '../../types';
 
 export default function ExtensionApp() {
   const { isLoggedIn } = useAuthentication();
-  const authenticationDispatch = useAuthenticationDispatch();
+
   const tours = useTours();
   const toursDispatch = useToursDispatch();
-
-  useEffect(
-    function logIn() {
-      authenticationDispatch({ type: 'logged in', csrftoken: '' });
-    },
-    [authenticationDispatch]
-  );
 
   useEffect(
     function initTours() {

@@ -26,20 +26,30 @@ export const AuthenticationProvider = ({ children }: Props) => {
 
   useEffect(function checkAuthentication() {
     (async () => {
-      // const cookies = await chrome.cookies.getAll({
-      //   domain: '127.0.0.1',
-      // });
-      // console.log('It works');
-      // const cookiesNames = cookies.map((cookie) => cookie.name);
-      // const hasCsrfToken = cookiesNames.includes('csrftoken');
-      // const hasSessionId = cookiesNames.includes('sessionid');
-      // if (hasCsrfToken && hasSessionId) {
-      //   authenticationDispatch({
-      //     type: 'logged in',
-      //     csrftoken: cookies.filter((item) => item.name === 'csrftoken')[0]
-      //       .value,
-      //   });
-      // }
+      const cookies = await chrome.cookies.getAll({
+        domain: 'localhost',
+      });
+
+      if (!cookies.length) return null;
+
+      let hasSessionToken = false;
+      let hasCsrfToken = false;
+      let csrfToken: string | undefined;
+
+      cookies.forEach((cookie) => {
+        if (cookie.name === 'next-auth.session-token') {
+          hasSessionToken = true;
+        }
+
+        if (cookie.name === 'next-auth.csrf-token') {
+          hasCsrfToken = true;
+          csrfToken = cookie.value;
+        }
+      });
+
+      if (hasSessionToken && hasCsrfToken) {
+        authenticationDispatch({ type: 'logged in', csrftoken: csrfToken! });
+      }
     })();
   }, []);
 

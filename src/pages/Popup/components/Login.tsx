@@ -5,7 +5,7 @@ import Button from './Button';
 const Login = () => {
   async function handleClick() {
     await chrome.tabs.create({
-      url: 'http://127.0.0.1:8000/crm/login/',
+      url: 'http://localhost:8000/login/',
     });
   }
 
