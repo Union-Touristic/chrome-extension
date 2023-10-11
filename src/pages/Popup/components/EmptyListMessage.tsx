@@ -1,38 +1,13 @@
 import React from 'react';
 import { PlusCircleIcon } from '@heroicons/react/24/outline';
 
-import { useToursDispatch } from '../context/ToursContext';
-
-import { tours } from '../../../mock-data/tours';
-
-import Button from './Button';
-import { ToursMessenger } from '../../../types/chrome-extesion';
-import { Tour } from '../../../types';
-
 const TOURVISOR_LINK = 'https://tourvisor.ru';
 
 const EmptyListMessage = () => {
-  const toursDispatch = useToursDispatch();
-
   const handleLinkClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     await chrome.tabs.create({
       url: TOURVISOR_LINK,
-    });
-  };
-
-  const handleButtonClick = async () => {
-    const fetchedTours = await chrome.runtime.sendMessage<
-      ToursMessenger,
-      Tour[]
-    >({
-      type: 'add',
-      data: tours,
-    });
-
-    toursDispatch({
-      type: 'update tours',
-      tours: fetchedTours,
     });
   };
 
@@ -61,7 +36,6 @@ const EmptyListMessage = () => {
           aria-hidden="true"
         />
       </p>
-      <Button onClick={handleButtonClick}>Фейк данные</Button>
     </div>
   );
 };
