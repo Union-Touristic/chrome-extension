@@ -37,11 +37,11 @@ export const AuthenticationProvider = ({ children }: Props) => {
       let csrfToken: string | undefined;
 
       cookies.forEach((cookie) => {
-        if (cookie.name === 'next-auth.session-token') {
+        if (cookie.name.includes('sessionid')) {
           hasSessionToken = true;
         }
 
-        if (cookie.name === 'next-auth.csrf-token') {
+        if (cookie.name.includes('csrftoken')) {
           hasCsrfToken = true;
           csrfToken = cookie.value;
         }
