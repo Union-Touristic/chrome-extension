@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import Button from './Button';
 
-import { useAuthentication } from '../context/AuthenticationContext';
 import { useNotificationDispatch } from '../context/NotificationContext';
 import { useTours } from '../context/ToursContext';
 
@@ -41,7 +40,7 @@ const SaveButton = () => {
   const [isLoading, setIsLoading] = useState(false);
   const tours = useTours();
   const notificationDispatch = useNotificationDispatch();
-  const authentication = useAuthentication();
+
   const handleSaveButtonClick = async () => {
     setIsLoading(true);
     // 1. format tours before send
@@ -52,87 +51,97 @@ const SaveButton = () => {
     // 5. On fail (4) show error in Extension Popup
     // 6. On success (4) open or reload tab depend on it current state
     const toursToSend = tours.map((tour) => ({
-      from_city: tour.city_from,
+      fromCity: tour.city_from,
       country: tour.country,
       region: tour.region,
-      departure_date: tour.checkinDt,
+      departureDate: tour.checkinDt,
       nights: tour.nights,
       hotel: tour.hotelName,
-      board_basis: tour.boardType,
-      room_type: tour.roomType,
-      hotel_short_description: tour.description,
+      boardBasis: tour.boardType,
+      roomType: tour.roomType,
+      hotelShortDescription: tour.description,
       operator: tour.operator,
       currency: tour.currency,
       price: tour.price,
       someExtraData: 'extra data',
     }));
 
-    const response = await chrome.runtime.sendMessage({
-      type: 'create selection',
-      data: toursToSend,
-      csrftoken: authentication.csrftoken,
+    const response = await fetch('http://localhost:8000/api/compilations', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(toursToSend),
     });
 
     await delay();
     setIsLoading(() => false);
 
-    if (response.status === 400) {
-      notificationDispatch({
-        type: 'add error notification',
-        title: `Ошибка ${response.status}`,
-        message: 'Bad request',
-      });
-      console.log(response.data);
-      return;
-    }
-
-    if (response.status === 403) {
-      notificationDispatch({
-        type: 'add error notification',
-        title: `Ошибка ${response.status}`,
-        message: 'Forbidden',
-      });
-      console.log(response.data);
-      return;
-    }
-
-    if (response.status === 500) {
-      notificationDispatch({
-        type: 'add error notification',
-        title: `Ошибка ${response.status}`,
-        message: 'Internal Server Error',
-      });
-      console.log(response.data);
-      return;
-    }
-
-    if (response.status === 'failed') {
-      notificationDispatch({
-        type: 'add error notification',
-        title: 'Нет сети',
-        message: 'Проверьте соединение',
-      });
-      console.log(response.data);
-      return;
-    }
-
-    let hasEmptyTours = false;
     if (response.status === 201) {
-      hasEmptyTours = await chrome.runtime.sendMessage({
-        type: 'remove all tours',
+      notificationDispatch({
+        type: 'add',
+        title: 'OK',
+        message: 'Success',
       });
     }
 
-    let shouldClosePopup = false;
-    if (hasEmptyTours) {
-      shouldClosePopup = await chrome.runtime.sendMessage({
-        type: 'open crm tab',
-      });
-    }
+    // if (response.status === 400) {
+    //   notificationDispatch({
+    //     type: 'add error notification',
+    //     title: `Ошибка ${response.status}`,
+    //     message: 'Bad request',
+    //   });
+    //   console.log(response.data);
+    //   return;
+    // }
 
-    if (shouldClosePopup) {
-      window.close();
-    }
+    // if (response.status === 403) {
+    //   notificationDispatch({
+    //     type: 'add error notification',
+    //     title: `Ошибка ${response.status}`,
+    //     message: 'Forbidden',
+    //   });
+    //   console.log(response.data);
+    //   return;
+    // }
+
+    // if (response.status === 500) {
+    //   notificationDispatch({
+    //     type: 'add error notification',
+    //     title: `Ошибка ${response.status}`,
+    //     message: 'Internal Server Error',
+    //   });
+    //   console.log(response.data);
+    //   return;
+    // }
+
+    // if (response.status === 'failed') {
+    //   notificationDispatch({
+    //     type: 'add error notification',
+    //     title: 'Нет сети',
+    //     message: 'Проверьте соединение',
+    //   });
+    //   console.log(response.data);
+    //   return;
+    // }
+
+    // let hasEmptyTours = false;
+    // if (response.status === 201) {
+    //   hasEmptyTours = await chrome.runtime.sendMessage({
+    //     type: 'remove all tours',
+    //   });
+    // }
+
+    // let shouldClosePopup = false;
+    // if (hasEmptyTours) {
+    //   shouldClosePopup = await chrome.runtime.sendMessage({
+    //     type: 'open crm tab',
+    //   });
+    // }
+
+    // if (shouldClosePopup) {
+    //   window.close();
+    // }
   };
 
   return (
