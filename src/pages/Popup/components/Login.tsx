@@ -5,7 +5,7 @@ import Button from './Button';
 const Login = () => {
   async function handleClick() {
     await chrome.tabs.create({
-      url: 'http://localhost:8000/login/',
+      url: 'https://uniontouristic.vercel.app/dashboard',
     });
   }
 

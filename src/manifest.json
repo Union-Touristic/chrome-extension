@@ -22,7 +22,10 @@
     "48": "icon-48.png",
     "128": "icon-128.png"
   },
-  "host_permissions": ["*://localhost/*"],
+  "host_permissions": [
+    "*://localhost/*",
+    "https://uniontouristic.vercel.app/*"
+  ],
   "content_scripts": [
     {
       "matches": ["*://tourvisor.ru/*"],

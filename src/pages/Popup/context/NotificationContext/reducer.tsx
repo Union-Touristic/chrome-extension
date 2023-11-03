@@ -1,7 +1,9 @@
+import React from 'react';
+
 export type NotificationState = {
   show: boolean;
   title: string;
-  message?: string;
+  message?: React.ReactNode;
   style: 'info' | 'success' | 'error';
 };
 
@@ -9,7 +11,7 @@ export type NotificationAction =
   | {
       type: 'add';
       title: string;
-      message?: string;
+      message?: React.ReactNode;
     }
   | {
       type: 'remove';
@@ -17,7 +19,7 @@ export type NotificationAction =
   | {
       type: 'add error notification';
       title: string;
-      message?: string;
+      message?: React.ReactNode;
     };
 
 export type NotificationType = {};

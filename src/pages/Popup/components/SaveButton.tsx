@@ -3,16 +3,13 @@ import Button from './Button';
 
 import { useNotificationDispatch } from '../context/NotificationContext';
 import { useTours } from '../context/ToursContext';
+import { ToursMessenger } from '../../../types/chrome-extesion';
+import { Tour } from '../../../types';
 
-const delay = () => {
-  return new Promise((resolve, reject) => {
-    try {
-      setTimeout(resolve, 1000);
-    } catch (error) {
-      setTimeout(reject, 1000);
-    }
+const delay = (ms: number) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
   });
-};
 
 const SpinningIcon = () => {
   return (
@@ -66,22 +63,30 @@ const SaveButton = () => {
       someExtraData: 'extra data',
     }));
 
-    const response = await fetch('http://localhost:8000/api/compilations', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(toursToSend),
-    });
+    const response = await fetch(
+      'https://uniontouristic.vercel.app/api/compilations',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(toursToSend),
+      }
+    );
 
-    await delay();
+    await delay(300);
     setIsLoading(() => false);
 
     if (response.status === 201) {
       notificationDispatch({
         type: 'add',
-        title: 'OK',
-        message: 'Success',
+        title: 'Подборка успешно сохранена',
+        message: <SuccessNotificationMessage />,
+      });
+
+      await chrome.runtime.sendMessage<ToursMessenger, Tour[]>({
+        type: 'update',
+        data: [],
       });
     }
 
@@ -158,3 +163,23 @@ const SaveButton = () => {
 };
 
 export default SaveButton;
+
+function SuccessNotificationMessage() {
+  return (
+    <>
+      Посмотреть подборку можно в CRM по{' '}
+      <a
+        className="underline"
+        href="https://uniontouristic.vercel.app/compilations"
+        onClick={async (e) => {
+          e.preventDefault();
+          await chrome.tabs.create({
+            url: e.currentTarget.href,
+          });
+        }}
+      >
+        ссылке
+      </a>
+    </>
+  );
+}

@@ -27,7 +27,8 @@ export const AuthenticationProvider = ({ children }: Props) => {
   useEffect(function checkAuthentication() {
     (async () => {
       const cookies = await chrome.cookies.getAll({
-        domain: 'localhost',
+        // TODO: change domain name for production
+        domain: 'uniontouristic.vercel.app',
       });
 
       if (!cookies.length) return null;
