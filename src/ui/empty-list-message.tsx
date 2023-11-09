@@ -1,9 +1,8 @@
-import React from 'react';
 import { PlusCircleIcon } from '@heroicons/react/24/outline';
 
 const TOURVISOR_LINK = 'https://tourvisor.ru';
 
-const EmptyListMessage = () => {
+export function EmptyListMessage() {
   const handleLinkClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     await chrome.tabs.create({
@@ -38,6 +37,4 @@ const EmptyListMessage = () => {
       </p>
     </div>
   );
-};
-
-export default EmptyListMessage;
+}

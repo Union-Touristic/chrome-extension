@@ -1,9 +1,8 @@
-import React from 'react';
 import { CheckCircleIcon } from '@heroicons/react/20/solid';
-import Button from './Button';
+import { Button } from '@/ui/compilation-table/elements';
 
-const Login = () => {
-  async function handleClick() {
+export function Login() {
+  async function handleClick(): Promise<void> {
     await chrome.tabs.create({
       url: 'https://uniontouristic.vercel.app/dashboard',
     });
@@ -37,6 +36,4 @@ const Login = () => {
       </div>
     </div>
   );
-};
-
-export default Login;
+}

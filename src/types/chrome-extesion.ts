@@ -1,4 +1,4 @@
-import { Tour } from '.';
+import type { Tour } from '@/lib/db/schema';
 
 export type ToursMessenger =
   | { type: 'retrieve' }

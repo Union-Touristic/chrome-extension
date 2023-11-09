@@ -1,4 +1,4 @@
-import { Tour } from '../../../types';
+import type { Tour } from '@/lib/db/schema';
 import { MD5 } from 'crypto-js';
 
 const TOUR_OPERATORS_MAP = {
@@ -212,31 +212,31 @@ function getHotelName(hotelResultItemInfoElement: Element) {
   }
 }
 
-function getHotelHref(hotelResultItemInfoElement: Element) {
-  const TVResultItemTitleLinkElement = hotelResultItemInfoElement.querySelector(
-    '.TVResultItemTitle a'
-  ) as HTMLAnchorElement | null;
+// function getHotelHref(hotelResultItemInfoElement: Element) {
+//   const TVResultItemTitleLinkElement = hotelResultItemInfoElement.querySelector(
+//     '.TVResultItemTitle a'
+//   ) as HTMLAnchorElement | null;
 
-  if (TVResultItemTitleLinkElement) {
-    const hotelHref = TVResultItemTitleLinkElement.href;
+//   if (TVResultItemTitleLinkElement) {
+//     const hotelHref = TVResultItemTitleLinkElement.href;
 
-    return hotelHref.trim();
-  }
-}
+//     return hotelHref.trim();
+//   }
+// }
 
-function getThumbnail(hotelResultItemInfoElement: Element) {
-  const TVResultItemImageElement =
-    hotelResultItemInfoElement.querySelector('.TVResultItemImage');
+// function getThumbnail(hotelResultItemInfoElement: Element) {
+//   const TVResultItemImageElement =
+//     hotelResultItemInfoElement.querySelector('.TVResultItemImage');
 
-  if (TVResultItemImageElement) {
-    const style = window.getComputedStyle(TVResultItemImageElement);
-    const url = style && style.backgroundImage;
+//   if (TVResultItemImageElement) {
+//     const style = window.getComputedStyle(TVResultItemImageElement);
+//     const url = style && style.backgroundImage;
 
-    if (url && url.length > 7) {
-      return url.slice(5, -2);
-    }
-  }
-}
+//     if (url && url.length > 7) {
+//       return url.slice(5, -2);
+//     }
+//   }
+// }
 
 function getDescription(hotelResultItemInfoElement: Element) {
   const TVResultItemDescriptionElement =
@@ -337,36 +337,36 @@ function getCity() {
   }
 }
 
-function getOccupancy(): Tour['occupancy'] {
-  const occupancy =
-    document.querySelector('.TVTourists') ||
-    document.querySelector('.TVTouristsSelect .TVMainSelectContent');
-  let match: RegExpMatchArray | null = null;
+// function getOccupancy(): Tour['occupancy'] {
+//   const occupancy =
+//     document.querySelector('.TVTourists') ||
+//     document.querySelector('.TVTouristsSelect .TVMainSelectContent');
+//   let match: RegExpMatchArray | null = null;
 
-  if (occupancy) {
-    const textContent = occupancy.textContent;
+//   if (occupancy) {
+//     const textContent = occupancy.textContent;
 
-    if (textContent) {
-      match = textContent.match(/(\d+).*?(\d+)?/g);
-    }
-  }
+//     if (textContent) {
+//       match = textContent.match(/(\d+).*?(\d+)?/g);
+//     }
+//   }
 
-  if (match) {
-    const childAges: number[] = []; // TODO: implement childAges data structure
+//   if (match) {
+//     const childAges: number[] = []; // TODO: implement childAges data structure
 
-    return {
-      adultsCount: Number(match[0]),
-      childrenCount: Number(match[1]) || 0,
-      childAges: childAges,
-    };
-  }
+//     return {
+//       adultsCount: Number(match[0]),
+//       childrenCount: Number(match[1]) || 0,
+//       childAges: childAges,
+//     };
+//   }
 
-  return {
-    adultsCount: 0,
-    childrenCount: 0,
-    childAges: [],
-  };
-}
+//   return {
+//     adultsCount: 0,
+//     childrenCount: 0,
+//     childAges: [],
+//   };
+// }
 
 export const collectTourOptions = (
   hotelResultItemInfoElement: Element,
@@ -376,18 +376,19 @@ export const collectTourOptions = (
     operator: getOperator(tourResultItemElement) || 'NotFound',
     country: getCountry() || 'NotFound',
     region: getRegion(hotelResultItemInfoElement) || 'NotFound',
-    hotelName: getHotelName(hotelResultItemInfoElement) || 'NotFound',
-    href: getHotelHref(hotelResultItemInfoElement) || 'NotFound',
-    thumbnail: getThumbnail(hotelResultItemInfoElement) || 'NotFound',
-    description: getDescription(hotelResultItemInfoElement) || 'NotFound',
-    checkinDt: getCheckinDate(tourResultItemElement) || 'NotFound', //TODO: find more readable way to convert this result to Date
+    hotel: getHotelName(hotelResultItemInfoElement) || 'NotFound',
+    // href: getHotelHref(hotelResultItemInfoElement) || 'NotFound',
+    // thumbnail: getThumbnail(hotelResultItemInfoElement) || 'NotFound',
+    hotelShortDescription:
+      getDescription(hotelResultItemInfoElement) || 'NotFound',
+    departureDate: getCheckinDate(tourResultItemElement) || 'NotFound', //TODO: find more readable way to convert this result to Date
     nights: getNights(tourResultItemElement) || 0,
-    boardType: getBoardType(tourResultItemElement) || 'NotFound',
+    boardBasis: getBoardType(tourResultItemElement) || 'NotFound',
     roomType: getRoomType(tourResultItemElement) || 'NotFound',
     price: getPrice(tourResultItemElement) || 0,
     currency: getCurrency(tourResultItemElement) || 'NotFound',
-    city_from: getCity() || 'NotFound',
-    occupancy: getOccupancy(),
+    fromCity: getCity() || 'NotFound',
+    // occupancy: getOccupancy(),
   };
 
   const id = generateTourId(tourWithoutId);

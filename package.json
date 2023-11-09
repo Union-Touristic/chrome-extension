@@ -8,19 +8,25 @@
     "url": "https://github.com/lxieyang/chrome-extension-boilerplate-react.git"
   },
   "scripts": {
-    "build": "node utils/build.js",
+    "build": "rm -rf build && node utils/build.js",
     "start": "node utils/webserver.js",
     "prettier": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,scss,md}'"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.0.18",
+    "clsx": "^2.0.0",
     "crypto-js": "^4.1.1",
+    "drizzle-orm": "^0.28.6",
+    "drizzle-zod": "^0.5.1",
+    "lucide-react": "^0.292.0",
     "lvovich": "^2.0.0",
     "moment": "^2.29.4",
     "react": "^18.2.0",
     "react-beautiful-dnd": "^13.1.1",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "tailwind-merge": "^2.0.0",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@babel/core": "^7.20.12",
@@ -34,6 +40,7 @@
     "@types/react": "^18.0.26",
     "@types/react-beautiful-dnd": "^13.1.5",
     "@types/react-dom": "^18.0.10",
+    "@types/uuid": "^9.0.7",
     "autoprefixer": "^10.4.16",
     "babel-eslint": "^10.1.0",
     "babel-loader": "^9.1.2",

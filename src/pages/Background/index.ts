@@ -1,5 +1,5 @@
-import { Tour } from '../../types';
-import { ToursMessenger } from '../../types/chrome-extesion';
+import type { Tour } from '@/lib/db/schema';
+import type { ToursMessenger } from '@/lib/definitions';
 
 console.log('This is the background page');
 console.log('Put the background scripts here.');

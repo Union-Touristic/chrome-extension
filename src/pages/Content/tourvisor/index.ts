@@ -1,5 +1,5 @@
-import { Tour } from '../../../types';
-import { ToursMessenger } from '../../../types/chrome-extesion';
+import type { Tour } from '@/lib/db/schema';
+import type { ToursMessenger } from '@/lib/definitions';
 import {
   collectTourOptions,
   createAddButton,

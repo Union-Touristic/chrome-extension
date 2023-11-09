@@ -1,3 +1,5 @@
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 import { cityFrom } from 'lvovich';
 import type { SortConfig, Tour } from '../../../types';
 import {
@@ -7,6 +9,10 @@ import {
 } from 'react-beautiful-dnd';
 
 export const frenchFormatter = new Intl.NumberFormat('fr-FR');
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 export const getNoun = (
   number: number,

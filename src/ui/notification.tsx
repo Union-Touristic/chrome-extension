@@ -1,4 +1,3 @@
-import React, { Fragment } from 'react';
 import { Transition } from '@headlessui/react';
 import {
   InformationCircleIcon,
@@ -6,17 +5,14 @@ import {
   ExclamationCircleIcon,
 } from '@heroicons/react/24/outline';
 import { XMarkIcon } from '@heroicons/react/20/solid';
-import {
-  useNotification,
-  useNotificationDispatch,
-} from '../context/NotificationContext';
+import { useNotification } from '@/ui/use-notification';
+import { Fragment } from 'react';
 
-const Notification = () => {
-  const notification = useNotification();
-  const notificationDispatch = useNotificationDispatch();
+export function Notification() {
+  const { notification, notificationAction } = useNotification();
 
   const handleCloseButtonClick = () => {
-    notificationDispatch({
+    notificationAction({
       type: 'remove',
     });
   };
@@ -89,6 +85,4 @@ const Notification = () => {
       </div>
     </>
   );
-};
-
-export default Notification;
+}
