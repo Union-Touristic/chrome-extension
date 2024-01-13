@@ -21,8 +21,6 @@ import { useEffect, useRef, useState } from 'react';
 
 import type { Tour, TourInsert } from '@/lib/db/schema';
 import { ToursMessenger, ToursSortConfig } from '@/lib/definitions';
-import { useTable } from '@/ui/compilation-table/use-table';
-import { useTours } from '@/ui/compilation-table/use-tours';
 import { Loader2 } from 'lucide-react';
 import { useNotification } from '@/ui/use-notification';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
@@ -32,7 +30,7 @@ import {
   toggleAll,
   updateSelectedRows,
 } from '@/redux/slices/tableSlice';
-import { updateTours } from '@/redux/slices/toursSlice';
+import { removeTour, updateTours } from '@/redux/slices/toursSlice';
 
 type TableSortButtonProps = {
   sortKey: ToursSortConfig['sortKey'];
@@ -148,27 +146,17 @@ export function TableRowDeleteButton({
   className,
   children,
 }: TableRowDeleteButtonProps) {
-  const { table, tableAction } = useTable();
-  const { toursAction } = useTours();
+  const table = useAppSelector((state) => state.table);
+  const dispatch = useAppDispatch();
 
-  async function handleDeleteTour() {
-    const updatedTours = await chrome.runtime.sendMessage<
-      ToursMessenger,
-      Tour[]
-    >({
-      type: 'remove',
-      data: tourId,
-    });
+  function handleDeleteTour() {
+    dispatch(removeTour(tourId));
 
-    toursAction({
-      type: 'update tours',
-      tours: updatedTours,
-    });
-
-    tableAction({
-      type: 'update selected rows',
-      selectedRows: table.selectedRows.filter((t) => t !== tourId),
-    });
+    dispatch(
+      updateSelectedRows({
+        selectedRows: table.selectedRows.filter((t) => t !== tourId),
+      })
+    );
   }
 
   return (
@@ -241,27 +229,12 @@ export function TableTopBarDeleteButton({
   className,
   children,
 }: TableTopBarDeleteButtonProps) {
-  const { table, tableAction } = useTable();
-  const { toursAction } = useTours();
+  const table = useAppSelector((state) => state.table);
+  const dispatch = useAppDispatch();
 
   const handleDeleteButtonClick = async () => {
-    const updatedTours = await chrome.runtime.sendMessage<
-      ToursMessenger,
-      Tour[]
-    >({
-      type: 'remove',
-      data: table.selectedRows,
-    });
-
-    tableAction({
-      type: 'update selected rows',
-      selectedRows: [],
-    });
-
-    toursAction({
-      type: 'update tours',
-      tours: updatedTours,
-    });
+    dispatch(removeTour(table.selectedRows));
+    dispatch(updateSelectedRows({ selectedRows: [] }));
   };
 
   return (
@@ -289,19 +262,17 @@ export function TableTopBarCopyButton({
   children,
 }: TableTopBarCopyButtonProps) {
   const [copied, setCopied] = useState(false);
-  const { table } = useTable();
-  const { tours } = useTours();
+  const table = useAppSelector((state) => state.table);
+  const data = useAppSelector((state) => state.tours.data);
 
   async function handleCopyButtonClick() {
-    const toursToCopy = tours.filter((tour) =>
-      table.selectedRows.includes(tour.id)
+    const dataToCopy = data.filter((item) =>
+      table.selectedRows.includes(item.id)
     );
-    const text = toursArrayToText(toursToCopy);
+    const text = toursArrayToText(dataToCopy);
 
     await setClipboard(text);
-
     setCopied(true);
-
     setTimeout(() => {
       setCopied(false);
     }, 1000);
@@ -466,14 +437,15 @@ export function SuccessNotificationMessage() {
 export function UpdateButton() {
   const [isLoading, setIsLoading] = useState(false);
   const { notificationAction } = useNotification();
-  const { tours, toursAction } = useTours();
+  const data = useAppSelector((state) => state.tours.data);
+  const dispatch = useAppDispatch();
 
   async function handleSaveButtonClick() {
     try {
       setIsLoading(true);
 
       // Format tour before send
-      const toursToInsert: TourInsert[] = tours.map(({ id, ...rest }) => {
+      const toursToInsert: TourInsert[] = data.map(({ id, ...rest }) => {
         return {
           ...rest,
         };
@@ -505,11 +477,7 @@ export function UpdateButton() {
           type: 'update',
           data: [],
         });
-
-        toursAction({
-          type: 'update tours',
-          tours: [],
-        });
+        dispatch(updateTours([]));
       }
 
       if (response.status === 400) {

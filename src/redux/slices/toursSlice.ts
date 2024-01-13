@@ -40,6 +40,24 @@ export const updateTours = createAsyncThunk(
   }
 );
 
+export const removeTour = createAsyncThunk(
+  'tours/removeTour',
+  async (data: Tour['id'] | Tour['id'][], thunkApi) => {
+    try {
+      const updatedTours = await chrome.runtime.sendMessage<
+        ToursMessenger,
+        Tour[]
+      >({
+        type: 'remove',
+        data: data,
+      });
+      return updatedTours;
+    } catch (error) {
+      return thunkApi.rejectWithValue(error);
+    }
+  }
+);
+
 const toursSlice = createSlice({
   name: 'tours',
   initialState: initialState,
@@ -62,6 +80,13 @@ const toursSlice = createSlice({
         return { ...state, data: action.payload };
       })
       .addCase(updateTours.rejected, (state) => state);
+
+    builder
+      .addCase(removeTour.pending, (state) => state)
+      .addCase(removeTour.fulfilled, (state, action) => {
+        return { ...state, data: action.payload };
+      })
+      .addCase(removeTour.rejected, (state) => state);
   },
 });
 
