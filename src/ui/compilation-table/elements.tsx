@@ -25,12 +25,13 @@ import { Loader2 } from 'lucide-react';
 import { useNotification } from '@/ui/use-notification';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
+  removeTour,
   selectedRowsChanged,
   setSortConfig,
   toggleAll,
   updateSelectedRows,
+  updateTours,
 } from '@/redux/slices/tableSlice';
-import { removeTour, updateTours } from '@/redux/slices/toursSlice';
 
 type TableSortButtonProps = {
   sortKey: ToursSortConfig['sortKey'];
@@ -44,7 +45,7 @@ export function TableSortButton({
   children,
 }: TableSortButtonProps) {
   const table = useAppSelector((state) => state.table);
-  const data = useAppSelector((state) => state.tours.data);
+  const data = table.data;
   const dispatch = useAppDispatch();
 
   const sc = table.sortConfig;
@@ -97,8 +98,8 @@ export function TableSortButton({
 }
 
 export function TableHeadCheckbox() {
-  const data = useAppSelector((state) => state.tours.data);
   const table = useAppSelector((state) => state.table);
+  const data = table.data;
   const dispatch = useAppDispatch();
   const checkbox = useRef<HTMLInputElement>(null);
 
@@ -263,7 +264,7 @@ export function TableTopBarCopyButton({
 }: TableTopBarCopyButtonProps) {
   const [copied, setCopied] = useState(false);
   const table = useAppSelector((state) => state.table);
-  const data = useAppSelector((state) => state.tours.data);
+  const data = table.data;
 
   async function handleCopyButtonClick() {
     const dataToCopy = data.filter((item) =>
@@ -335,7 +336,7 @@ type TableRowEditPriceProps = {
 export function TableRowEditPrice({ tour }: TableRowEditPriceProps) {
   // TODO: fix possible null
   const [price, setPrice] = useState(frenchFormatter.format(tour.price!));
-  const tours = useAppSelector((state) => state.tours.data);
+  const tours = useAppSelector((state) => state.table.data);
   const dispatch = useAppDispatch();
   const initialPriceRef = useRef(tour.price);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -437,7 +438,7 @@ export function SuccessNotificationMessage() {
 export function UpdateButton() {
   const [isLoading, setIsLoading] = useState(false);
   const { notificationAction } = useNotification();
-  const data = useAppSelector((state) => state.tours.data);
+  const data = useAppSelector((state) => state.table.data);
   const dispatch = useAppDispatch();
 
   async function handleSaveButtonClick() {

@@ -1,8 +1,7 @@
 import type { Tour } from '@/lib/db/schema';
 import { cn, reorder } from '@/lib/utils';
 import { useAppDispatch } from '@/redux/hooks';
-import { setSortConfig } from '@/redux/slices/tableSlice';
-import { updateTours } from '@/redux/slices/toursSlice';
+import { setSortConfig, updateTours } from '@/redux/slices/tableSlice';
 import { StrictModeDroppable } from '@/ui/compilation-table/droppable';
 import { Thead } from '@/ui/compilation-table/table-head';
 import { Tr } from '@/ui/compilation-table/table-row';

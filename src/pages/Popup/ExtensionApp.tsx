@@ -1,14 +1,14 @@
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { Table } from '@/ui/compilation-table/table';
+import { Table  } from '@/ui/compilation-table/table';
 import { Login } from '@/ui/login';
 import { EmptyListMessage } from '@/ui/empty-list-message';
 import { fetchCookies } from '@/redux/slices/authSlice';
-import { fetchTours } from '@/redux/slices/toursSlice';
+import { fetchTours } from '@/redux/slices/tableSlice';
 
 export function ExtensionApp() {
   const isLoggedIn = useAppSelector((state) => state.auth.isLoggedIn);
-  const tours = useAppSelector((state) => state.tours.data);
+  const tours = useAppSelector((state) => state.table.data);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
