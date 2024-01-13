@@ -15,7 +15,11 @@ export function ExtensionApp() {
     Promise.all([dispatch(fetchCookies()), dispatch(fetchTours())]);
   }, [dispatch]);
 
-  const tableOrEmptyMessage = tours.length ? <Table /> : <EmptyListMessage />;
+  const tableOrEmptyMessage = tours.length ? (
+    <Table data={tours} />
+  ) : (
+    <EmptyListMessage />
+  );
 
   return isLoggedIn ? tableOrEmptyMessage : <Login />;
 }

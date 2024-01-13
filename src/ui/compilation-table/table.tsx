@@ -1,12 +1,12 @@
 import type { Tour } from '@/lib/db/schema';
-import type { ToursMessenger } from '@/lib/definitions';
 import { cn, reorder } from '@/lib/utils';
+import { useAppDispatch } from '@/redux/hooks';
+import { updateTours } from '@/redux/slices/toursSlice';
 import { StrictModeDroppable } from '@/ui/compilation-table/droppable';
 import { Thead } from '@/ui/compilation-table/table-head';
 import { Tr } from '@/ui/compilation-table/table-row';
 import { TableTopBar } from '@/ui/compilation-table/table-top-bar';
 import { useTable } from '@/ui/compilation-table/use-table';
-import { useTours } from '@/ui/compilation-table/use-tours';
 import {
   DragDropContext,
   Draggable,
@@ -14,8 +14,12 @@ import {
   ResponderProvided,
 } from 'react-beautiful-dnd';
 
-export function Table() {
-  const { tours, toursAction } = useTours();
+type Props = {
+  data: Tour[];
+};
+
+export function Table({ data }: Props) {
+  const dispatch = useAppDispatch();
   const { tableAction } = useTable();
 
   async function handleDragEnd(
@@ -27,28 +31,16 @@ export function Table() {
     if (!destination) {
       return;
     }
-
     // dropped at the same place
     if (destination.index === source.index) {
       return;
     }
-
     tableAction({
       type: 'set sort config',
       config: null,
     });
-
-    const reorderedTours = reorder(tours, source.index, destination.index);
-
-    const updatedTours = await chrome.runtime.sendMessage<
-      ToursMessenger,
-      Tour[]
-    >({ type: 'update', data: reorderedTours });
-
-    toursAction({
-      type: 'update tours',
-      tours: updatedTours,
-    });
+    const reorderedData = reorder(data, source.index, destination.index);
+    dispatch(updateTours(reorderedData));
   }
 
   return (
@@ -67,7 +59,7 @@ export function Table() {
                 {...provided.droppableProps}
                 ref={provided.innerRef}
               >
-                {tours.map((t, index) => (
+                {data.map((t, index) => (
                   <Draggable
                     key={t.id}
                     draggableId={String(t.id)}

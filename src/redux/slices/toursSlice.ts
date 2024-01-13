@@ -25,6 +25,21 @@ export const fetchTours = createAsyncThunk(
   }
 );
 
+export const updateTours = createAsyncThunk(
+  'tours/updateTours',
+  async (data: Tour[], thunkApi) => {
+    try {
+      const tours = await chrome.runtime.sendMessage<ToursMessenger, Tour[]>({
+        type: 'update',
+        data: data,
+      });
+      return tours;
+    } catch (error) {
+      return thunkApi.rejectWithValue(error);
+    }
+  }
+);
+
 const toursSlice = createSlice({
   name: 'tours',
   initialState: initialState,
@@ -40,6 +55,13 @@ const toursSlice = createSlice({
       .addCase(fetchTours.rejected, (state) => {
         return state;
       });
+
+    builder
+      .addCase(updateTours.pending, (state) => state)
+      .addCase(updateTours.fulfilled, (state, action) => {
+        return { ...state, data: action.payload };
+      })
+      .addCase(updateTours.rejected, (state) => state);
   },
 });
 
