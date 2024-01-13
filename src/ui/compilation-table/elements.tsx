@@ -26,7 +26,13 @@ import { useTours } from '@/ui/compilation-table/use-tours';
 import { Loader2 } from 'lucide-react';
 import { useNotification } from '@/ui/use-notification';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { selectedRowsChanged, toggleAll } from '@/redux/slices/tableSlice';
+import {
+  selectedRowsChanged,
+  setSortConfig,
+  toggleAll,
+  updateSelectedRows,
+} from '@/redux/slices/tableSlice';
+import { updateTours } from '@/redux/slices/toursSlice';
 
 type TableSortButtonProps = {
   sortKey: ToursSortConfig['sortKey'];
@@ -39,21 +45,19 @@ export function TableSortButton({
   className,
   children,
 }: TableSortButtonProps) {
-  const { table, tableAction } = useTable();
-  const { tours, toursAction } = useTours();
+  const table = useAppSelector((state) => state.table);
+  const data = useAppSelector((state) => state.tours.data);
+  const dispatch = useAppDispatch();
+
   const sc = table.sortConfig;
 
   async function handleSortTable(sortKey: TableSortButtonProps['sortKey']) {
     const config = createSortConfig(table.sortConfig, sortKey);
+    dispatch(setSortConfig(config));
 
-    tableAction({
-      type: 'set sort config',
-      config: config,
-    });
+    const copiedData = [...data];
 
-    const copiedTours = [...tours];
-
-    const sortedTours = copiedTours.sort((a, b) => {
+    const sortedTours = copiedData.sort((a, b) => {
       const key = config.sortKey;
       // TODO: fix possible null
       if (a[key]! < b[key]!) {
@@ -65,18 +69,7 @@ export function TableSortButton({
       return 0;
     });
 
-    const updatedTours = await chrome.runtime.sendMessage<
-      ToursMessenger,
-      Tour[]
-    >({
-      type: 'update',
-      data: sortedTours,
-    });
-
-    toursAction({
-      type: 'update tours',
-      tours: updatedTours,
-    });
+    await dispatch(updateTours(sortedTours));
   }
 
   const Icon = () => {
@@ -109,7 +102,6 @@ export function TableHeadCheckbox() {
   const data = useAppSelector((state) => state.tours.data);
   const table = useAppSelector((state) => state.table);
   const dispatch = useAppDispatch();
-
   const checkbox = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -341,7 +333,8 @@ type TableRowCheckboxProps = {
 };
 
 export function TableRowCheckbox({ singleTour }: TableRowCheckboxProps) {
-  const { table, tableAction } = useTable();
+  const table = useAppSelector((state) => state.table);
+  const dispatch = useAppDispatch();
 
   return (
     <>
@@ -354,12 +347,10 @@ export function TableRowCheckbox({ singleTour }: TableRowCheckboxProps) {
         className="absolute top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-blue-600 hover:cursor-pointer hover:ring-2 hover:ring-blue-300 hover:ring-offset-2 focus:ring-blue-500"
         checked={table.selectedRows.includes(singleTour.id)}
         onChange={(e) => {
-          tableAction({
-            type: 'update selected rows',
-            selectedRows: e.target.checked
-              ? [...table.selectedRows, singleTour.id]
-              : table.selectedRows.filter((t) => t !== singleTour.id),
-          });
+          const selectedRows = e.target.checked
+            ? [...table.selectedRows, singleTour.id]
+            : table.selectedRows.filter((t) => t !== singleTour.id);
+          dispatch(updateSelectedRows({ selectedRows }));
         }}
       />
     </>
@@ -373,7 +364,8 @@ type TableRowEditPriceProps = {
 export function TableRowEditPrice({ tour }: TableRowEditPriceProps) {
   // TODO: fix possible null
   const [price, setPrice] = useState(frenchFormatter.format(tour.price!));
-  const { tours, toursAction } = useTours();
+  const tours = useAppSelector((state) => state.tours.data);
+  const dispatch = useAppDispatch();
   const initialPriceRef = useRef(tour.price);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -410,19 +402,7 @@ export function TableRowEditPrice({ tour }: TableRowEditPriceProps) {
           }
         : item
     );
-    const updatedTours = await chrome.runtime.sendMessage<
-      ToursMessenger,
-      Tour[]
-    >({
-      type: 'update',
-      data: toursWithChangedTour,
-    });
-
-    toursAction({
-      type: 'update tours',
-      tours: updatedTours,
-    });
-
+    await dispatch(updateTours(toursWithChangedTour));
     inputRef.current?.blur();
   };
 

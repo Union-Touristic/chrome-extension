@@ -44,10 +44,20 @@ const tableSlice = createSlice({
         indeterminate,
       };
     },
+    updateSelectedRows: (
+      state,
+      action: PayloadAction<Pick<TableState, 'selectedRows'>>
+    ) => {
+      return { ...state, selectedRows: action.payload.selectedRows };
+    },
   },
 });
 
-export const { setSortConfig, selectedRowsChanged, toggleAll } =
-  tableSlice.actions;
+export const {
+  setSortConfig,
+  selectedRowsChanged,
+  toggleAll,
+  updateSelectedRows,
+} = tableSlice.actions;
 
 export const tableReducer = tableSlice.reducer;

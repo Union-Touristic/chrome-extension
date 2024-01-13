@@ -5,13 +5,13 @@ import {
   getStyle,
   removeParenthesisAndContentInGivenString,
 } from '@/lib/utils';
+import { useAppSelector } from '@/redux/hooks';
 import {
   TableRowCheckbox,
   TableRowCopyButton,
   TableRowDeleteButton,
   TableRowEditPrice,
 } from '@/ui/compilation-table/elements';
-import { useTable } from '@/ui/compilation-table/use-table';
 import { Squares2X2Icon } from '@heroicons/react/20/solid';
 import { ComponentProps } from 'react';
 import { DraggableProvided, DraggableStateSnapshot } from 'react-beautiful-dnd';
@@ -23,7 +23,7 @@ type Props = {
 };
 
 export function Tr({ tour, provided, snapshot }: Props) {
-  const { table } = useTable();
+  const table = useAppSelector((state) => state.table);
 
   return (
     <tr
