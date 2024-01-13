@@ -495,12 +495,10 @@ export function UpdateButton() {
       setIsLoading(true);
 
       // Format tour before send
-      const toursToInsert: TourInsert[] = tours.map((t) => {
-        const obj: TourInsert = {
-          ...t,
+      const toursToInsert: TourInsert[] = tours.map(({ id, ...rest }) => {
+        return {
+          ...rest,
         };
-        delete obj['id'];
-        return obj;
       });
 
       const response = await fetch(

@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import ExtensionApp from './ExtensionApp';
+import { ExtensionApp } from './ExtensionApp';
 import './index.css';
 import { Providers } from '@/ui/compilation-table/providers';
 import { Notification } from '@/ui/notification';
