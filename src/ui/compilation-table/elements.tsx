@@ -25,6 +25,8 @@ import { useTable } from '@/ui/compilation-table/use-table';
 import { useTours } from '@/ui/compilation-table/use-tours';
 import { Loader2 } from 'lucide-react';
 import { useNotification } from '@/ui/use-notification';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { selectedRowsChanged, toggleAll } from '@/redux/slices/tableSlice';
 
 type TableSortButtonProps = {
   sortKey: ToursSortConfig['sortKey'];
@@ -104,36 +106,32 @@ export function TableSortButton({
 }
 
 export function TableHeadCheckbox() {
-  const { table, tableAction } = useTable();
-  const { tours } = useTours();
+  const data = useAppSelector((state) => state.tours.data);
+  const table = useAppSelector((state) => state.table);
+  const dispatch = useAppDispatch();
 
   const checkbox = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const isIndeterminate =
-      table.selectedRows.length > 0 && table.selectedRows.length < tours.length;
-
-    tableAction({
-      type: 'selected rows changed',
-      checked: table.selectedRows.length === tours.length,
-      indeterminate: isIndeterminate,
-    });
+      table.selectedRows.length > 0 && table.selectedRows.length < data.length;
+    dispatch(
+      selectedRowsChanged({
+        checked: table.selectedRows.length === data.length,
+        indeterminate: isIndeterminate,
+      })
+    );
 
     if (checkbox && checkbox.current) {
       checkbox.current.indeterminate = isIndeterminate;
     }
-  }, [table.selectedRows, tableAction, tours]);
+  }, [dispatch, data.length, table.selectedRows.length]);
 
   const handleCheckboxChange = () => {
-    tableAction({
-      type: 'toggle all',
-      selectedRows:
-        table.checked || table.indeterminate
-          ? []
-          : tours.map((tour) => tour.id),
-      checked: !table.checked && !table.indeterminate,
-      indeterminate: false,
-    });
+    const selectedRows =
+      table.checked || table.indeterminate ? [] : data.map((item) => item.id);
+    const checked = !table.checked && !table.indeterminate;
+    dispatch(toggleAll({ selectedRows, checked, indeterminate: false }));
   };
 
   return (
