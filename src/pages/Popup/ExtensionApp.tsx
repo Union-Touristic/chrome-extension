@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { Table  } from '@/ui/compilation-table/table';
+import { DataTable } from '@/ui/compilation-table/data-table';
 import { Login } from '@/ui/login';
 import { EmptyListMessage } from '@/ui/empty-list-message';
 import { fetchCookies } from '@/redux/slices/authSlice';
 import { fetchTours } from '@/redux/slices/tableSlice';
+import { columns } from '@/ui/compilation-table/columns';
 
 export function ExtensionApp() {
   const isLoggedIn = useAppSelector((state) => state.auth.isLoggedIn);
@@ -16,7 +17,7 @@ export function ExtensionApp() {
   }, [dispatch]);
 
   const tableOrEmptyMessage = tours.length ? (
-    <Table data={tours} />
+    <DataTable data={tours} columns={columns} />
   ) : (
     <EmptyListMessage />
   );

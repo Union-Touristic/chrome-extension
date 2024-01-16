@@ -27,7 +27,7 @@ export function Thead() {
   );
 }
 
-function Th({ children, className, ...props }: ComponentProps<'th'>) {
+export function Th({ children, className, ...props }: ComponentProps<'th'>) {
   return (
     <th
       scope="col"

@@ -301,27 +301,27 @@ export function TableTopBarCopyButton({
 }
 
 type TableRowCheckboxProps = {
-  singleTour: Tour;
+  id: Tour['id'];
 };
 
-export function TableRowCheckbox({ singleTour }: TableRowCheckboxProps) {
+export function TableRowCheckbox({ id }: TableRowCheckboxProps) {
   const table = useAppSelector((state) => state.table);
   const dispatch = useAppDispatch();
 
   return (
     <>
       {/* Selected row marker, only show when row is selected. */}
-      {table.selectedRows.includes(singleTour.id) && (
+      {table.selectedRows.includes(id) && (
         <div className="absolute inset-y-0 left-0 w-0.5 bg-blue-600"></div>
       )}
       <input
         type="checkbox"
         className="absolute top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-blue-600 hover:cursor-pointer hover:ring-2 hover:ring-blue-300 hover:ring-offset-2 focus:ring-blue-500"
-        checked={table.selectedRows.includes(singleTour.id)}
+        checked={table.selectedRows.includes(id)}
         onChange={(e) => {
           const selectedRows = e.target.checked
-            ? [...table.selectedRows, singleTour.id]
-            : table.selectedRows.filter((t) => t !== singleTour.id);
+            ? [...table.selectedRows, id]
+            : table.selectedRows.filter((t) => t !== id);
           dispatch(updateSelectedRows({ selectedRows }));
         }}
       />

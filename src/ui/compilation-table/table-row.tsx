@@ -7,7 +7,6 @@ import {
 } from '@/lib/utils';
 import { useAppSelector } from '@/redux/hooks';
 import {
-  TableRowCheckbox,
   TableRowCopyButton,
   TableRowDeleteButton,
   TableRowEditPrice,
@@ -41,7 +40,7 @@ export function Tr({ tour, provided, snapshot }: Props) {
       ref={provided.innerRef}
     >
       <Td className="relative w-9">
-        <TableRowCheckbox singleTour={tour} />
+        {/* <TableRowCheckbox singleTour={tour} /> */}
       </Td>
       <Td className="min-w-[200px] flex-grow">
         <span className="font-medium">
