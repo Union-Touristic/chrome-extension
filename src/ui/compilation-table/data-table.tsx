@@ -25,6 +25,7 @@ import {
   TableBody,
   TableCell,
 } from '@/ui/table';
+import { Fragment } from 'react';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -68,43 +69,35 @@ export function DataTable<TData, TValue>({
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
-                <TableHead key={header.id}>
+                <Fragment key={header.id}>
                   {header.isPlaceholder
                     ? null
                     : flexRender(
                         header.column.columnDef.header,
                         header.getContext()
                       )}
-                </TableHead>
+                </Fragment>
               ))}
             </TableRow>
           ))}
         </TableHeader>
         <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow
-                className={cn(
-                  'border-t-0 bg-white leading-4 focus:relative focus:z-20 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-0',
-                  'group/row'
-                )}
-                key={row.id}
-                data-state={row.getIsSelected() && 'selected'}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
-          ) : (
-            <tr>
-              <td colSpan={columns.length} className="h-24 text-center">
-                No results.
-              </td>
-            </tr>
-          )}
+          {table.getRowModel().rows.map((row) => (
+            <TableRow
+              className={cn(
+                'border-t-0 border-gray-200 bg-white text-xs leading-4 focus:relative focus:z-20 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-0',
+                'group/row'
+              )}
+              key={row.id}
+              data-state={row.getIsSelected() && 'selected'}
+            >
+              {row.getVisibleCells().map((cell) => (
+                <Fragment key={cell.id}>
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </Fragment>
+              ))}
+            </TableRow>
+          ))}
         </TableBody>
         {/* <DragDropContext onDragEnd={handleDragEnd}>
           <StrictModeDroppable droppableId="droppable">

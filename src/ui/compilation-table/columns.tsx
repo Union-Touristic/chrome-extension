@@ -6,61 +6,63 @@ import {
   TableRowCopyButton,
   TableRowDeleteButton,
   TableRowEditPrice,
+  TableSortButton,
 } from './elements';
 import { getNoun, removeParenthesisAndContentInGivenString } from '@/lib/utils';
 import { TdSubText } from './table-row';
+import { TableCell, TableHead } from '../table';
 
 export const columns: ColumnDef<Tour>[] = [
   // Empty column
   {
     accessorKey: 'id',
-    header: () => (
-      <div className="w-9 relative">
+    header: (x) => (
+      <TableHead className="w-9 relative">
         <TableHeadCheckbox />
-      </div>
+      </TableHead>
     ),
     cell({ row }) {
       return (
-        <div className="w-9 relative">
+        <TableCell className="w-9 relative">
           <TableRowCheckbox id={row.getValue('id')} />
-        </div>
+        </TableCell>
       );
     },
   },
   // Hotel
   {
     accessorKey: 'hotel',
-    header: () => <div className="min-w-[200px]">Отель</div>,
+    header: () => (
+      <TableHead className="min-w-[200px] flex-grow">Отель</TableHead>
+    ),
     cell: (info) => {
       const hotel = info.getValue<Tour['hotel']>();
       const { country, region } = info.row.original;
 
       return (
-        <>
-          <div className="min-w-[200px]">
-            <span className="font-medium">
-              {hotel && removeParenthesisAndContentInGivenString(hotel)}
-            </span>
-          </div>
+        <TableCell className="min-w-[200px] flex-grow">
+          <span className="font-medium">
+            {hotel && removeParenthesisAndContentInGivenString(hotel)}
+          </span>
           <TdSubText>
             {country}, {region}
           </TdSubText>
-        </>
+        </TableCell>
       );
     },
   },
   // From city
   {
     accessorKey: 'fromCity',
-    header: () => <div className="w-24">Вылет</div>,
+    header: () => <TableHead className="w-24">Вылет</TableHead>,
     cell: (info) => {
       const fromCity = info.getValue<Tour['fromCity']>();
       const operator = info.row.original.operator;
       return (
-        <div className="w-24">
+        <TableCell className="w-24">
           <span>{fromCity}</span>
           <TdSubText>{operator}</TdSubText>
-        </div>
+        </TableCell>
       );
     },
   },
@@ -68,9 +70,9 @@ export const columns: ColumnDef<Tour>[] = [
   {
     accessorKey: 'departureDate',
     header: () => (
-      <div className="w-28">
-        <button>Заселение</button>
-      </div>
+      <TableHead className="w-28">
+        <TableSortButton sortKey="departureDate">Заселение</TableSortButton>
+      </TableHead>
     ),
     cell: (info) => {
       const nights = info.row.original.nights;
@@ -80,57 +82,61 @@ export const columns: ColumnDef<Tour>[] = [
       if (nights) noun = getNoun(nights, 'ночь', 'ночи', 'ночей');
 
       return (
-        <div className="w-28">
+        <TableCell className="w-28">
           <span>{departureDate}</span>
           {noun ? (
             <TdSubText>
               {nights} {noun}
             </TdSubText>
           ) : null}
-        </div>
+        </TableCell>
       );
     },
   },
   // Board Basis
   {
     accessorKey: 'boardBasis',
-    header: () => <div className="w-36">Питание и номер</div>,
+    header: () => <TableHead className="w-36">Питание и номер</TableHead>,
     cell: (data) => {
       const boardBasis = data.getValue<Tour['boardBasis']>();
       const roomType = data.row.original.roomType;
 
       return (
-        <div className="w-36">
+        <TableCell className="w-36">
           <span>{boardBasis}</span>
           <TdSubText>{roomType}</TdSubText>
-        </div>
+        </TableCell>
       );
     },
   },
   // Price
   {
     accessorKey: 'price',
-    header: () => <div className="flex w-20 justify-end">Цена</div>,
+    header: () => (
+      <TableHead className="flex w-20 justify-end">
+        <TableSortButton sortKey="price">Цена</TableSortButton>
+      </TableHead>
+    ),
     cell: (data) => {
       const tour = data.row.original;
       const currency = tour.currency;
 
       return (
-        <div className="w-20 text-right">
+        <TableCell className="w-20 text-right">
           <TableRowEditPrice tour={tour} />
           <TdSubText>{currency}</TdSubText>
-        </div>
+        </TableCell>
       );
     },
   },
   // Actions
   {
     accessorKey: 'id',
-    header: () => <div className="w-28">Действия</div>,
+    header: () => <TableHead className="w-28">Действия</TableHead>,
     cell: (data) => {
       const tour = data.row.original;
       return (
-        <div className="28 flex-row items-center justify-between">
+        <TableCell className="w-28 flex-row items-center justify-between">
           <div className="-ml-1.5 flex items-center space-x-2">
             <TableRowCopyButton singleTour={tour}>
               <span className="sr-only">Копировать</span>
@@ -139,7 +145,7 @@ export const columns: ColumnDef<Tour>[] = [
               <span className="sr-only">Удалить</span>
             </TableRowDeleteButton>
           </div>
-        </div>
+        </TableCell>
       );
     },
   },
