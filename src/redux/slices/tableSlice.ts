@@ -3,6 +3,7 @@ import type {
   ToursSortConfig,
   TourPrice,
   ToursMessenger,
+  ReorderStartEndIndexes,
 } from '@/lib/definitions';
 import { Tour } from '@/lib/db/schema';
 
@@ -61,6 +62,21 @@ export const updateTourPrice = createAsyncThunk(
     try {
       const updatedTours = await chromeToursMessenger({
         type: 'update tour price',
+        data,
+      });
+      return updatedTours;
+    } catch (error) {
+      return thunkApi.rejectWithValue(error);
+    }
+  }
+);
+
+export const updateToursOrder = createAsyncThunk(
+  'tours/updateToursOrder',
+  async (data: ReorderStartEndIndexes, thunkApi) => {
+    try {
+      const updatedTours = await chromeToursMessenger({
+        type: 'update tours order',
         data,
       });
       return updatedTours;
@@ -152,6 +168,14 @@ const tableSlice = createSlice({
         data: action.payload,
       }))
       .addCase(updateTourPrice.rejected, (state) => state);
+
+    builder
+      .addCase(updateToursOrder.pending, (state) => state)
+      .addCase(updateToursOrder.fulfilled, (state, action) => ({
+        ...state,
+        data: action.payload,
+      }))
+      .addCase(updateToursOrder.rejected, (state) => state);
   },
 });
 

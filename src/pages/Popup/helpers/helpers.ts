@@ -6,7 +6,7 @@ import {
   DraggableStateSnapshot,
   DraggingStyle,
   NotDraggingStyle,
-} from 'react-beautiful-dnd';
+} from '@hello-pangea/dnd';
 
 export const frenchFormatter = new Intl.NumberFormat('fr-FR');
 
@@ -108,10 +108,6 @@ export const getStyle = (
     // cannot be 0, but make it super tiny
     transitionDuration: `0.2s`,
   };
-};
-
-export const classNames = (...classes: Array<string>) => {
-  return classes.filter(Boolean).join(' ');
 };
 
 export const removeParenthesisAndContentInGivenString = (str: string) => {

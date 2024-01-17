@@ -7,10 +7,11 @@ import {
   DeleteTourButton,
   TourEditPrice,
   SortToursButton,
+  SubText,
 } from './elements';
 import { getNoun, removeParenthesisAndContentInGivenString } from '@/lib/utils';
-import { SubText } from './table-row';
 import { TableCell, TableHead } from '../table';
+import { Squares2X2Icon } from '@heroicons/react/20/solid';
 
 export const columns: ColumnDef<Tour>[] = [
   // Empty column
@@ -144,6 +145,20 @@ export const columns: ColumnDef<Tour>[] = [
             <DeleteTourButton tourId={tour.id} className="">
               <span className="sr-only">Удалить</span>
             </DeleteTourButton>
+          </div>
+          <div
+          // className={cn(
+          //   'cursor-grab rounded px-1 py-1 text-transparent transition-colors focus:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 group-hover/row:text-gray-400',
+          //   {
+          //     'text-white focus:text-white': snapshot.isDragging,
+          //   }
+          // )}
+          // {...provided.dragHandleProps}
+          // provided.dragHandleProps is making row grabbable in particular area
+          >
+            <Squares2X2Icon className="h-2 w-2" />
+            <Squares2X2Icon className="h-2 w-2" />
+            <Squares2X2Icon className="h-2 w-2" />
           </div>
         </TableCell>
       );

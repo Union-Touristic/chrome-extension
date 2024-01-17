@@ -12,6 +12,11 @@ export type TourPrice = {
   price: NonNullable<Tour['price']>;
 };
 
+export type ReorderStartEndIndexes = {
+  startIndex: number;
+  endIndex: number;
+};
+
 export type Occupancy = {
   adultsCount: number;
   childrenCount: number;
@@ -31,4 +36,5 @@ export type ToursMessenger =
   | { type: 'add'; data: Tour[] }
   | { type: 'update'; data: Tour[] }
   | { type: 'remove'; data: Tour['id'] | Tour['id'][] }
-  | { type: 'update tour price'; data: TourPrice };
+  | { type: 'update tour price'; data: TourPrice }
+  | { type: 'update tours order'; data: ReorderStartEndIndexes };

@@ -3,7 +3,7 @@ import type {
   DraggableStateSnapshot,
   DraggingStyle,
   NotDraggingStyle,
-} from 'react-beautiful-dnd';
+} from '@hello-pangea/dnd';
 import { twMerge } from 'tailwind-merge';
 import type { Tour } from '@/lib/db/schema';
 import type { ToursSortConfig } from '@/lib/definitions';

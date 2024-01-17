@@ -4,8 +4,9 @@ import { DataTable } from '@/ui/compilation-table/data-table';
 import { Login } from '@/ui/login';
 import { EmptyListMessage } from '@/ui/empty-list-message';
 import { fetchCookies } from '@/redux/slices/authSlice';
-import { fetchTours } from '@/redux/slices/tableSlice';
+import { fetchTours, updateToursOrder } from '@/redux/slices/tableSlice';
 import { columns } from '@/ui/compilation-table/columns';
+import { ReorderStartEndIndexes } from '@/lib/definitions';
 
 export function ExtensionApp() {
   const isLoggedIn = useAppSelector((state) => state.auth.isLoggedIn);
@@ -16,8 +17,12 @@ export function ExtensionApp() {
     Promise.all([dispatch(fetchCookies()), dispatch(fetchTours())]);
   }, [dispatch]);
 
+  function handleDragEnd({ startIndex, endIndex }: ReorderStartEndIndexes) {
+    dispatch(updateToursOrder({ startIndex, endIndex }));
+  }
+
   const tableOrEmptyMessage = tours.length ? (
-    <DataTable data={tours} columns={columns} />
+    <DataTable data={tours} columns={columns} onDragEnd={handleDragEnd} />
   ) : (
     <EmptyListMessage />
   );

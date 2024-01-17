@@ -17,7 +17,7 @@ import {
   ClipboardDocumentIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline';
-import { useEffect, useRef, useState } from 'react';
+import { ComponentProps, useEffect, useRef, useState } from 'react';
 
 import type { Tour, TourInsert } from '@/lib/db/schema';
 import { TourPrice, ToursMessenger, ToursSortConfig } from '@/lib/definitions';
@@ -530,5 +530,23 @@ export function UpdateButton() {
         'Сохранить в CRM'
       )}
     </Button>
+  );
+}
+
+export function SubText({
+  className,
+  children,
+  ...props
+}: ComponentProps<'span'>) {
+  return (
+    <span
+      className={cn(
+        'text-gray-500 group-[.is-dragging]:text-gray-100',
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </span>
   );
 }

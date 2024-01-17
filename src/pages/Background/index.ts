@@ -1,5 +1,6 @@
 import type { Tour } from '@/lib/db/schema';
 import type { ToursMessenger } from '@/lib/definitions';
+import { reorder } from '@/lib/utils';
 
 console.log('This is the background page');
 console.log('Put the background scripts here.');
@@ -80,6 +81,21 @@ chrome.runtime.onMessage.addListener(
           }
         });
         return true;
+
+      case 'update tours order': {
+        getToursFromStorage().then((tours) => {
+          if (tours) {
+            const { startIndex, endIndex } = message.data;
+            const nextTours = reorder(tours, startIndex, endIndex);
+            updateToursStorage(nextTours).then((updatedTours) => {
+              sendResponse(updatedTours);
+            });
+          } else {
+            throw Error('Something went wrong');
+          }
+        });
+        return true;
+      }
 
       case 'remove':
         getToursFromStorage().then((tours) => {
