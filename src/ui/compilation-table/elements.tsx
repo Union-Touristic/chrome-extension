@@ -33,24 +33,24 @@ import {
   updateTours,
 } from '@/redux/slices/tableSlice';
 
-type TableSortButtonProps = {
+type SortToursButtonProps = {
   sortKey: ToursSortConfig['sortKey'];
   className?: string;
   children?: React.ReactNode;
 };
 
-export function TableSortButton({
+export function SortToursButton({
   sortKey,
   className,
   children,
-}: TableSortButtonProps) {
+}: SortToursButtonProps) {
   const table = useAppSelector((state) => state.table);
   const data = table.data;
   const dispatch = useAppDispatch();
 
   const sc = table.sortConfig;
 
-  async function handleSortTable(sortKey: TableSortButtonProps['sortKey']) {
+  async function handleSortTable(sortKey: SortToursButtonProps['sortKey']) {
     const config = createSortConfig(table.sortConfig, sortKey);
     dispatch(setSortConfig(config));
 
@@ -97,7 +97,7 @@ export function TableSortButton({
   );
 }
 
-export function TableHeadCheckbox() {
+export function SelectAllToursCheckbox() {
   const table = useAppSelector((state) => state.table);
   const data = table.data;
   const dispatch = useAppDispatch();
@@ -136,17 +136,17 @@ export function TableHeadCheckbox() {
   );
 }
 
-type TableRowDeleteButtonProps = {
+type DeleteTourButtonProps = {
   tourId: Tour['id'];
   className?: string;
   children?: React.ReactNode;
 };
 
-export function TableRowDeleteButton({
+export function DeleteTourButton({
   tourId,
   className,
   children,
-}: TableRowDeleteButtonProps) {
+}: DeleteTourButtonProps) {
   const table = useAppSelector((state) => state.table);
   const dispatch = useAppDispatch();
 
@@ -178,16 +178,13 @@ export function TableRowDeleteButton({
   );
 }
 
-type TableRowCopyButtonProps = {
+type CopyTourButtonProps = {
   singleTour: Tour;
   className?: string;
   children?: React.ReactNode;
 };
 
-export function TableRowCopyButton({
-  singleTour,
-  className,
-}: TableRowCopyButtonProps) {
+export function CopyTourButton({ singleTour, className }: CopyTourButtonProps) {
   const [copied, setCopied] = useState(false);
 
   async function handleCopyButtonClick() {
@@ -300,11 +297,11 @@ export function TableTopBarCopyButton({
   );
 }
 
-type TableRowCheckboxProps = {
+type SelectTourCheckboxProps = {
   id: Tour['id'];
 };
 
-export function TableRowCheckbox({ id }: TableRowCheckboxProps) {
+export function SelectTourCheckbox({ id }: SelectTourCheckboxProps) {
   const table = useAppSelector((state) => state.table);
   const dispatch = useAppDispatch();
 
@@ -329,12 +326,12 @@ export function TableRowCheckbox({ id }: TableRowCheckboxProps) {
   );
 }
 
-type TableRowEditPriceProps = {
+type TourEditPriceProps = {
   tour: Tour;
 };
 
-export function TableRowEditPrice({ tour }: TableRowEditPriceProps) {
-  // TODO: fix possible null
+export function TourEditPrice({ tour }: TourEditPriceProps) {
+  // TODO: refactor this code. Make component accept only id and price
   const [price, setPrice] = useState(frenchFormatter.format(tour.price!));
   const tours = useAppSelector((state) => state.table.data);
   const dispatch = useAppDispatch();
@@ -385,7 +382,7 @@ export function TableRowEditPrice({ tour }: TableRowEditPriceProps) {
         type="text"
         value={price}
         onChange={handlePriceInputChange}
-        className="focuse:ring-blue-500 w-16 border-0 bg-transparent p-0 text-right text-xs focus:rounded-sm focus:ring-2 focus:ring-offset-2 group-[.is-dragging]:text-white"
+        className="focus:ring-blue-500 w-16 border-0 bg-transparent p-0 text-right text-xs focus:rounded-sm focus:ring-2 focus:ring-offset-2 group-[.is-dragging]:text-white"
         onKeyDown={handleInputKeydown}
       />
     </form>

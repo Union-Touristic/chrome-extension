@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 import {
-  TableHeadCheckbox,
-  TableSortButton,
+  SelectAllToursCheckbox,
+  SortToursButton,
 } from '@/ui/compilation-table/elements';
 import { ComponentProps } from 'react';
 
@@ -10,16 +10,16 @@ export function Thead() {
     <thead className="sticky top-0 z-20 flex basis-full">
       <tr className="flex basis-full border-y border-gray-300 bg-gray-200 text-left text-xs text-gray-900">
         <Th className="relative w-9 ">
-          <TableHeadCheckbox />
+          <SelectAllToursCheckbox />
         </Th>
         <Th className="min-w-[200px] flex-grow">Отель</Th>
         <Th className="w-24 ">Вылет</Th>
         <Th className="w-28 ">
-          <TableSortButton sortKey="departureDate">Заселение</TableSortButton>
+          <SortToursButton sortKey="departureDate">Заселение</SortToursButton>
         </Th>
         <Th className="w-36 ">Питание и номер</Th>
         <Th className="flex w-20 justify-end">
-          <TableSortButton sortKey="price">Цена</TableSortButton>
+          <SortToursButton sortKey="price">Цена</SortToursButton>
         </Th>
         <Th className="w-28">Действия</Th>
       </tr>

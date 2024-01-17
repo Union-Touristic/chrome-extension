@@ -1,30 +1,30 @@
 import { Tour } from '@/lib/db/schema';
 import { ColumnDef } from '@tanstack/react-table';
 import {
-  TableHeadCheckbox,
-  TableRowCheckbox,
-  TableRowCopyButton,
-  TableRowDeleteButton,
-  TableRowEditPrice,
-  TableSortButton,
+  SelectAllToursCheckbox,
+  SelectTourCheckbox,
+  CopyTourButton,
+  DeleteTourButton,
+  TourEditPrice,
+  SortToursButton,
 } from './elements';
 import { getNoun, removeParenthesisAndContentInGivenString } from '@/lib/utils';
-import { TdSubText } from './table-row';
+import { SubText } from './table-row';
 import { TableCell, TableHead } from '../table';
 
 export const columns: ColumnDef<Tour>[] = [
   // Empty column
   {
     accessorKey: 'id',
-    header: (x) => (
+    header: () => (
       <TableHead className="w-9 relative">
-        <TableHeadCheckbox />
+        <SelectAllToursCheckbox />
       </TableHead>
     ),
     cell({ row }) {
       return (
         <TableCell className="w-9 relative">
-          <TableRowCheckbox id={row.getValue('id')} />
+          <SelectTourCheckbox id={row.getValue('id')} />
         </TableCell>
       );
     },
@@ -44,9 +44,9 @@ export const columns: ColumnDef<Tour>[] = [
           <span className="font-medium">
             {hotel && removeParenthesisAndContentInGivenString(hotel)}
           </span>
-          <TdSubText>
+          <SubText>
             {country}, {region}
-          </TdSubText>
+          </SubText>
         </TableCell>
       );
     },
@@ -61,7 +61,7 @@ export const columns: ColumnDef<Tour>[] = [
       return (
         <TableCell className="w-24">
           <span>{fromCity}</span>
-          <TdSubText>{operator}</TdSubText>
+          <SubText>{operator}</SubText>
         </TableCell>
       );
     },
@@ -71,7 +71,7 @@ export const columns: ColumnDef<Tour>[] = [
     accessorKey: 'departureDate',
     header: () => (
       <TableHead className="w-28">
-        <TableSortButton sortKey="departureDate">Заселение</TableSortButton>
+        <SortToursButton sortKey="departureDate">Заселение</SortToursButton>
       </TableHead>
     ),
     cell: (info) => {
@@ -85,9 +85,9 @@ export const columns: ColumnDef<Tour>[] = [
         <TableCell className="w-28">
           <span>{departureDate}</span>
           {noun ? (
-            <TdSubText>
+            <SubText>
               {nights} {noun}
-            </TdSubText>
+            </SubText>
           ) : null}
         </TableCell>
       );
@@ -104,7 +104,7 @@ export const columns: ColumnDef<Tour>[] = [
       return (
         <TableCell className="w-36">
           <span>{boardBasis}</span>
-          <TdSubText>{roomType}</TdSubText>
+          <SubText>{roomType}</SubText>
         </TableCell>
       );
     },
@@ -114,7 +114,7 @@ export const columns: ColumnDef<Tour>[] = [
     accessorKey: 'price',
     header: () => (
       <TableHead className="flex w-20 justify-end">
-        <TableSortButton sortKey="price">Цена</TableSortButton>
+        <SortToursButton sortKey="price">Цена</SortToursButton>
       </TableHead>
     ),
     cell: (data) => {
@@ -122,28 +122,28 @@ export const columns: ColumnDef<Tour>[] = [
       const currency = tour.currency;
 
       return (
-        <TableCell className="w-20 text-right">
-          <TableRowEditPrice tour={tour} />
-          <TdSubText>{currency}</TdSubText>
+        <TableCell className="w-20 text-right" key={tour.id + data.cell.id}>
+          <TourEditPrice tour={tour} />
+          <SubText>{currency}</SubText>
         </TableCell>
       );
     },
   },
   // Actions
   {
-    accessorKey: 'id',
+    accessorKey: 'actions',
     header: () => <TableHead className="w-28">Действия</TableHead>,
     cell: (data) => {
       const tour = data.row.original;
       return (
         <TableCell className="w-28 flex-row items-center justify-between">
           <div className="-ml-1.5 flex items-center space-x-2">
-            <TableRowCopyButton singleTour={tour}>
+            <CopyTourButton singleTour={tour}>
               <span className="sr-only">Копировать</span>
-            </TableRowCopyButton>
-            <TableRowDeleteButton tourId={tour.id} className="">
+            </CopyTourButton>
+            <DeleteTourButton tourId={tour.id} className="">
               <span className="sr-only">Удалить</span>
-            </TableRowDeleteButton>
+            </DeleteTourButton>
           </div>
         </TableCell>
       );

@@ -7,9 +7,9 @@ import {
 } from '@/lib/utils';
 import { useAppSelector } from '@/redux/hooks';
 import {
-  TableRowCopyButton,
-  TableRowDeleteButton,
-  TableRowEditPrice,
+  CopyTourButton,
+  DeleteTourButton,
+  TourEditPrice,
 } from '@/ui/compilation-table/elements';
 import { Squares2X2Icon } from '@heroicons/react/20/solid';
 import { ComponentProps } from 'react';
@@ -46,36 +46,36 @@ export function Tr({ tour, provided, snapshot }: Props) {
         <span className="font-medium">
           {tour.hotel && removeParenthesisAndContentInGivenString(tour.hotel)}
         </span>
-        <TdSubText>
+        <SubText>
           {tour.country}, {tour.region}
-        </TdSubText>
+        </SubText>
       </Td>
       <Td className="w-24">
         <span>{tour.fromCity}</span>
-        <TdSubText>{tour.operator}</TdSubText>
+        <SubText>{tour.operator}</SubText>
       </Td>
       <Td className="w-28">
         <span>{tour.departureDate}</span>
-        <TdSubText>
+        <SubText>
           {tour.nights} {getNoun(Number(tour.nights), 'ночь', 'ночи', 'ночей')}
-        </TdSubText>
+        </SubText>
       </Td>
       <Td className="w-36">
         <span>{tour.boardBasis}</span>
-        <TdSubText>{tour.roomType}</TdSubText>
+        <SubText>{tour.roomType}</SubText>
       </Td>
       <Td className="w-20 text-right">
-        <TableRowEditPrice tour={tour} />
-        <TdSubText>{tour.currency}</TdSubText>
+        <TourEditPrice tour={tour} />
+        <SubText>{tour.currency}</SubText>
       </Td>
       <Td className="w-28 flex-row items-center justify-between">
         <div className="-ml-1.5 flex items-center space-x-2">
-          <TableRowCopyButton singleTour={tour}>
+          <CopyTourButton singleTour={tour}>
             <span className="sr-only">Копировать</span>
-          </TableRowCopyButton>
-          <TableRowDeleteButton tourId={tour.id} className="">
+          </CopyTourButton>
+          <DeleteTourButton tourId={tour.id} className="">
             <span className="sr-only">Удалить</span>
-          </TableRowDeleteButton>
+          </DeleteTourButton>
         </div>
         <div
           className={cn(
@@ -110,7 +110,7 @@ export function Td({ className, children, ...props }: ComponentProps<'td'>) {
   );
 }
 
-export function TdSubText({
+export function SubText({
   className,
   children,
   ...props
