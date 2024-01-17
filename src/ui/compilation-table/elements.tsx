@@ -20,7 +20,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 
 import type { Tour, TourInsert } from '@/lib/db/schema';
-import { ToursMessenger, ToursSortConfig } from '@/lib/definitions';
+import { TourPrice, ToursMessenger, ToursSortConfig } from '@/lib/definitions';
 import { Loader2 } from 'lucide-react';
 import { useNotification } from '@/ui/use-notification';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
@@ -30,6 +30,7 @@ import {
   setSortConfig,
   toggleAll,
   updateSelectedRows,
+  updateTourPrice,
   updateTours,
 } from '@/redux/slices/tableSlice';
 
@@ -326,23 +327,20 @@ export function SelectTourCheckbox({ id }: SelectTourCheckboxProps) {
   );
 }
 
-type TourEditPriceProps = {
-  tour: Tour;
-};
+type TourEditPriceProps = TourPrice;
 
-export function TourEditPrice({ tour }: TourEditPriceProps) {
+export function TourEditPrice({ id, price }: TourEditPriceProps) {
   // TODO: refactor this code. Make component accept only id and price
-  const [price, setPrice] = useState(frenchFormatter.format(tour.price!));
-  const tours = useAppSelector((state) => state.table.data);
+  const [value, setValue] = useState(frenchFormatter.format(price));
   const dispatch = useAppDispatch();
-  const initialPriceRef = useRef(tour.price);
+  const initialPriceRef = useRef(price);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const handlePriceInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const re = /^[\d\s]+$/;
     if (e.target.value === '' || re.test(e.target.value)) {
       const priceToNumber = Number(e.target.value.replace(/\s/g, ''));
-      setPrice(frenchFormatter.format(priceToNumber));
+      setValue(frenchFormatter.format(priceToNumber));
     }
   };
 
@@ -350,28 +348,20 @@ export function TourEditPrice({ tour }: TourEditPriceProps) {
     if (e.code === 'Escape') {
       e.preventDefault();
       // TODO: fix types
-      setPrice(frenchFormatter.format(initialPriceRef.current!));
+      setValue(frenchFormatter.format(initialPriceRef.current!));
       inputRef.current?.blur();
     }
 
     if (e.code === 'Tab') {
       // TODO: fix types
-      setPrice(frenchFormatter.format(initialPriceRef.current!));
+      setValue(frenchFormatter.format(initialPriceRef.current!));
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const updatedPrice = Number(inputRef.current?.value.replace(/\s/g, ''));
-    const toursWithChangedTour: Tour[] = tours.map((item) =>
-      tour.id === item.id
-        ? {
-            ...item,
-            price: updatedPrice,
-          }
-        : item
-    );
-    await dispatch(updateTours(toursWithChangedTour));
+    dispatch(updateTourPrice({ id, price: updatedPrice }));
     inputRef.current?.blur();
   };
 
@@ -380,7 +370,7 @@ export function TourEditPrice({ tour }: TourEditPriceProps) {
       <input
         ref={inputRef}
         type="text"
-        value={price}
+        value={value}
         onChange={handlePriceInputChange}
         className="focus:ring-blue-500 w-16 border-0 bg-transparent p-0 text-right text-xs focus:rounded-sm focus:ring-2 focus:ring-offset-2 group-[.is-dragging]:text-white"
         onKeyDown={handleInputKeydown}

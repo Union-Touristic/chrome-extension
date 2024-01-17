@@ -61,6 +61,26 @@ chrome.runtime.onMessage.addListener(
         });
         return true;
 
+      case 'update tour price':
+        getToursFromStorage().then((tours) => {
+          if (tours) {
+            const nextTours = tours.map((tour) => {
+              if (tour.id === message.data.id) {
+                return { ...tour, price: message.data.price };
+              } else {
+                return tour;
+              }
+            });
+
+            updateToursStorage(nextTours).then((updatedTours) => {
+              sendResponse(updatedTours);
+            });
+          } else {
+            throw Error('Something went wrong');
+          }
+        });
+        return true;
+
       case 'remove':
         getToursFromStorage().then((tours) => {
           if (tours) {

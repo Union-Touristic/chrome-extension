@@ -65,7 +65,7 @@ export function Tr({ tour, provided, snapshot }: Props) {
         <SubText>{tour.roomType}</SubText>
       </Td>
       <Td className="w-20 text-right">
-        <TourEditPrice tour={tour} />
+        {/* <TourEditPrice tour={tour} /> */}
         <SubText>{tour.currency}</SubText>
       </Td>
       <Td className="w-28 flex-row items-center justify-between">

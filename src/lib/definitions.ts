@@ -7,6 +7,11 @@ export type ToursSortConfig = {
   direction: 'asc' | 'dsc';
 };
 
+export type TourPrice = {
+  id: Tour['id'];
+  price: NonNullable<Tour['price']>;
+};
+
 export type Occupancy = {
   adultsCount: number;
   childrenCount: number;
@@ -25,4 +30,5 @@ export type ToursMessenger =
   | { type: 'init' }
   | { type: 'add'; data: Tour[] }
   | { type: 'update'; data: Tour[] }
-  | { type: 'remove'; data: Tour['id'] | Tour['id'][] };
+  | { type: 'remove'; data: Tour['id'] | Tour['id'][] }
+  | { type: 'update tour price'; data: TourPrice };

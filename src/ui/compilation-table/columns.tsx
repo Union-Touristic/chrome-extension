@@ -119,11 +119,11 @@ export const columns: ColumnDef<Tour>[] = [
     ),
     cell: (data) => {
       const tour = data.row.original;
-      const currency = tour.currency;
+      const { id, price, currency } = tour;
 
       return (
-        <TableCell className="w-20 text-right" key={tour.id + data.cell.id}>
-          <TourEditPrice tour={tour} />
+        <TableCell className="w-20 text-right" key={id + data.cell.id}>
+          {price ? <TourEditPrice id={id} price={price} /> : null}
           <SubText>{currency}</SubText>
         </TableCell>
       );
