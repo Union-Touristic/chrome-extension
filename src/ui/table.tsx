@@ -5,11 +5,7 @@ const Table = React.forwardRef<
   HTMLTableElement,
   React.HTMLAttributes<HTMLTableElement>
 >(({ className, ...props }, ref) => (
-  <table
-    ref={ref}
-    className={cn('relative flex flex-wrap overflow-auto', className)}
-    {...props}
-  />
+  <table ref={ref} className={cn('relative w-full', className)} {...props} />
 ));
 Table.displayName = 'Table';
 
@@ -17,11 +13,7 @@ const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <thead
-    ref={ref}
-    className={cn('sticky top-0 z-20 flex basis-full', className)}
-    {...props}
-  />
+  <thead ref={ref} className={cn('sticky top-0 z-20', className)} {...props} />
 ));
 TableHeader.displayName = 'TableHeader';
 
@@ -32,7 +24,7 @@ const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={cn(
-      'flex basis-full border-y border-gray-300 bg-gray-200 text-left text-xs text-gray-900',
+      'border-y border-gray-300 bg-gray-200 text-left text-xs text-gray-900',
       className
     )}
     {...props}
@@ -46,10 +38,7 @@ const TableHead = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <th
     ref={ref}
-    className={cn(
-      'shrink-0 p-2 py-3 font-medium first:pl-3 last:pr-3',
-      className
-    )}
+    className={cn('px-2 py-3 font-medium first:pl-3 last:pr-3', className)}
     {...props}
   />
 ));
@@ -61,10 +50,7 @@ const TableBody = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <tbody
     ref={ref}
-    className={cn(
-      'flex h-[min(400px,500px)] basis-full flex-wrap content-start py-1 transition-colors',
-      className
-    )}
+    className={cn('py-1 transition-colors', className)}
     {...props}
   />
 ));
@@ -92,7 +78,7 @@ const TableCell = React.forwardRef<
   <td
     ref={ref}
     className={cn(
-      'flex shrink-0 flex-col p-2 first:pl-3 last:pr-3 group-[.is-dragging]:text-white',
+      'p-2 first:pl-3 last:pr-3 group-[.is-dragging]:text-white',
       className
     )}
     {...props}

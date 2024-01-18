@@ -6,7 +6,14 @@ import {
 } from '@tanstack/react-table';
 import { cn, getStyle } from '@/lib/utils';
 import { TableTopBar } from '@/ui/compilation-table/table-top-bar';
-import { Table, TableHeader, TableRow, TableBody } from '@/ui/table';
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableBody,
+  TableHead,
+  TableCell,
+} from '@/ui/table';
 import {
   DragDropContext,
   Draggable,
@@ -14,7 +21,6 @@ import {
   DropResult,
   ResponderProvided,
 } from '@hello-pangea/dnd';
-import { Fragment } from 'react';
 import { ReorderStartEndIndexes } from '@/lib/definitions';
 
 interface DataTableProps<TData, TValue> {
@@ -39,35 +45,35 @@ export function DataTable<TData, TValue>({
     provided: ResponderProvided
   ) {
     const { source, destination } = result;
+
     // dropped outside the list
-    if (!destination) {
-      return;
-    }
-    // dropped at the same place
-    if (destination.index === source.index) {
-      return;
-    }
+    if (!destination) return;
+
     const startIndex = source.index;
     const endIndex = destination.index;
+
+    // dropped at the same place
+    if (startIndex === endIndex) return;
+
     onDragEnd && onDragEnd({ startIndex, endIndex });
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden">
+    <div className="">
       <TableTopBar />
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
-                <Fragment key={header.id}>
+                <TableHead key={header.id}>
                   {header.isPlaceholder
                     ? null
                     : flexRender(
                         header.column.columnDef.header,
                         header.getContext()
                       )}
-                </Fragment>
+                </TableHead>
               ))}
             </TableRow>
           ))}
@@ -110,12 +116,12 @@ export function DataTable<TData, TValue>({
                         data-state={row.getIsSelected() && 'selected'}
                       >
                         {row.getVisibleCells().map((cell) => (
-                          <Fragment key={cell.id}>
+                          <TableCell key={cell.id}>
                             {flexRender(
                               cell.column.columnDef.cell,
                               cell.getContext()
                             )}
-                          </Fragment>
+                          </TableCell>
                         ))}
                       </TableRow>
                     )}

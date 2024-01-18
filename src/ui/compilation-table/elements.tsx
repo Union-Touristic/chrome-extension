@@ -314,7 +314,7 @@ export function SelectTourCheckbox({ id }: SelectTourCheckboxProps) {
       )}
       <input
         type="checkbox"
-        className="absolute top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-blue-600 hover:cursor-pointer hover:ring-2 hover:ring-blue-300 hover:ring-offset-2 focus:ring-blue-500"
+        className="-mt-2 h-4 w-4 rounded border-gray-300 text-blue-600 hover:cursor-pointer hover:ring-2 hover:ring-blue-300 hover:ring-offset-2 focus:ring-blue-500"
         checked={table.selectedRows.includes(id)}
         onChange={(e) => {
           const selectedRows = e.target.checked
@@ -548,5 +548,27 @@ export function SubText({
     >
       {children}
     </span>
+  );
+}
+
+type CellWithSubtextProps = {
+  text: string | null | undefined;
+  textBold?: boolean;
+  subtext: string | null | undefined;
+  className?: string;
+};
+export function CellWithSubtext({
+  text,
+  textBold,
+  subtext,
+  className,
+}: CellWithSubtextProps) {
+  return (
+    <div className={cn('flex flex-col', className)}>
+      {text ? (
+        <span className={cn({ 'font-medium': textBold })}>{text}</span>
+      ) : null}
+      {subtext ? <SubText>{subtext}</SubText> : null}
+    </div>
   );
 }
