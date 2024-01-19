@@ -4,13 +4,19 @@ import { DataTable } from '@/ui/compilation-table/data-table';
 import { Login } from '@/ui/login';
 import { EmptyListMessage } from '@/ui/empty-list-message';
 import { fetchCookies } from '@/redux/slices/authSlice';
-import { fetchTours, updateToursOrder } from '@/redux/slices/tableSlice';
+import {
+  fetchTours,
+  sortTours,
+  updateToursOrder,
+} from '@/redux/slices/tableSlice';
 import { columns } from '@/ui/compilation-table/columns';
 import { ReorderStartEndIndexes } from '@/lib/definitions';
+import { SortingState, Updater, functionalUpdate } from '@tanstack/react-table';
 
 export function ExtensionApp() {
   const isLoggedIn = useAppSelector((state) => state.auth.isLoggedIn);
-  const tours = useAppSelector((state) => state.table.data);
+  const { data, sorting } = useAppSelector((state) => state.table);
+
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -21,8 +27,19 @@ export function ExtensionApp() {
     dispatch(updateToursOrder({ startIndex, endIndex }));
   }
 
-  const tableOrEmptyMessage = tours.length ? (
-    <DataTable data={tours} columns={columns} onDragEnd={handleDragEnd} />
+  function onSortingChange(updater: Updater<SortingState>) {
+    const updatedSorting = functionalUpdate(updater, sorting);
+    dispatch(sortTours(updatedSorting));
+  }
+
+  const tableOrEmptyMessage = data.length ? (
+    <DataTable
+      data={data}
+      columns={columns}
+      onDragEnd={handleDragEnd}
+      sorting={sorting}
+      onSortingChange={onSortingChange}
+    />
   ) : (
     <EmptyListMessage />
   );

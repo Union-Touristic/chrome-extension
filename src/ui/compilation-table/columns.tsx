@@ -6,9 +6,9 @@ import {
   CopyTourButton,
   DeleteTourButton,
   TourEditPrice,
-  SortToursButton,
   SubText,
   CellWithSubtext,
+  ColumnSortHeader,
 } from './elements';
 import { getNoun, removeParenthesisAndContentInGivenString } from '@/lib/utils';
 
@@ -45,9 +45,9 @@ export const columns: ColumnDef<Tour>[] = [
   },
   {
     accessorKey: 'departureDate',
-    header: () => (
-      <SortToursButton sortKey="departureDate">Заселение</SortToursButton>
-    ),
+    header: ({ column }) => {
+      return <ColumnSortHeader column={column} title="Заселение" />;
+    },
     cell: ({ row }) => {
       const { nights, departureDate } = row.original;
       let noun: string | undefined;
@@ -72,11 +72,7 @@ export const columns: ColumnDef<Tour>[] = [
   },
   {
     accessorKey: 'price',
-    header: () => (
-      <div className="flex justify-end">
-        <SortToursButton sortKey="price">Цена</SortToursButton>
-      </div>
-    ),
+    header: ({ column }) => <ColumnSortHeader column={column} title="Цена" />,
     cell: ({ row }) => {
       const { id, price, currency } = row.original;
 

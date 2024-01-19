@@ -33,6 +33,7 @@ import {
   updateTourPrice,
   updateTours,
 } from '@/redux/slices/tableSlice';
+import { Column } from '@tanstack/react-table';
 
 type SortToursButtonProps = {
   sortKey: ToursSortConfig['sortKey'];
@@ -570,5 +571,44 @@ export function CellWithSubtext({
       ) : null}
       {subtext ? <SubText>{subtext}</SubText> : null}
     </div>
+  );
+}
+
+interface ColumnSortHeaderProps<TData, TValue>
+  extends React.HTMLAttributes<HTMLDivElement> {
+  column: Column<TData, TValue>;
+  title: string;
+}
+
+export function ColumnSortHeader<TData, TValue>({
+  column,
+  title,
+  className,
+}: ColumnSortHeaderProps<TData, TValue>) {
+  if (!column.getCanSort()) {
+    return <div className={cn(className)}>{title}</div>;
+  }
+
+  const direction = column.getIsSorted();
+
+  return (
+    <button
+      className="flex rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      type="button"
+      onClick={() => {
+        column.toggleSorting(direction === 'asc');
+      }}
+    >
+      <span>{title}</span>
+      {direction === 'asc' && (
+        <ChevronDownIcon className="ml-1 h-4 w-4 text-indigo-700" />
+      )}
+      {direction === 'desc' && (
+        <ChevronUpIcon className="ml-1 h-4 w-4 text-indigo-700" />
+      )}
+      {direction === false && (
+        <ChevronUpDownIcon className="ml-1 h-4 w-4 text-gray-500" />
+      )}
+    </button>
   );
 }

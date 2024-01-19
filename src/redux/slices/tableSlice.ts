@@ -6,6 +6,7 @@ import type {
   ReorderStartEndIndexes,
 } from '@/lib/definitions';
 import { Tour } from '@/lib/db/schema';
+import { SortingState } from '@tanstack/react-table';
 
 export function chromeToursMessenger(t: ToursMessenger) {
   return chrome.runtime.sendMessage<ToursMessenger, Tour[]>(t);
@@ -17,6 +18,7 @@ export interface TableState {
   indeterminate: boolean;
   selectedRows: Array<Tour['id']>;
   data: Tour[];
+  sorting: SortingState;
 }
 
 const initialState: TableState = {
@@ -25,6 +27,7 @@ const initialState: TableState = {
   indeterminate: false,
   selectedRows: [],
   data: [],
+  sorting: [],
 };
 
 export const fetchTours = createAsyncThunk(
@@ -71,6 +74,21 @@ export const updateTourPrice = createAsyncThunk(
   }
 );
 
+export const sortTours = createAsyncThunk(
+  'tours/sortTours',
+  async (sorting: SortingState, thunkApi) => {
+    try {
+      const updatedTours = await chromeToursMessenger({
+        type: 'sort tours',
+        sorting,
+      });
+      return { updatedTours, sorting };
+    } catch (error) {
+      return thunkApi.rejectWithValue(error);
+    }
+  }
+);
+
 export const updateToursOrder = createAsyncThunk(
   'tours/updateToursOrder',
   async (data: ReorderStartEndIndexes, thunkApi) => {
@@ -107,6 +125,9 @@ const tableSlice = createSlice({
   reducers: {
     setSortConfig: (state, action: PayloadAction<ToursSortConfig | null>) => {
       return { ...state, sortConfig: action.payload };
+    },
+    setSorting: (state, action: PayloadAction<SortingState>) => {
+      return { ...state, sorting: action.payload };
     },
     selectedRowsChanged: (
       state,
@@ -176,10 +197,19 @@ const tableSlice = createSlice({
         data: action.payload,
       }))
       .addCase(updateToursOrder.rejected, (state) => state);
+
+    builder
+      .addCase(sortTours.pending, (state) => state)
+      .addCase(sortTours.fulfilled, (state, action) => {
+        const { sorting, updatedTours } = action.payload;
+        return { ...state, sorting, data: updatedTours };
+      })
+      .addCase(sortTours.rejected, (state) => state);
   },
 });
 
 export const {
+  setSorting,
   setSortConfig,
   selectedRowsChanged,
   toggleAll,

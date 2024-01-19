@@ -1,7 +1,12 @@
+import * as React from 'react';
 import {
   ColumnDef,
+  OnChangeFn,
+  RowSelectionState,
+  SortingState,
   flexRender,
   getCoreRowModel,
+  getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
 import { cn, getStyle } from '@/lib/utils';
@@ -27,17 +32,30 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   onDragEnd?: ({ startIndex, endIndex }: ReorderStartEndIndexes) => void;
+  sorting: SortingState;
+  onSortingChange: OnChangeFn<SortingState>;
 }
 
 export function DataTable<TData, TValue>({
   data,
   columns,
   onDragEnd,
+  sorting,
+  onSortingChange,
 }: DataTableProps<TData, TValue>) {
+  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    onSortingChange: onSortingChange,
+    getSortedRowModel: getSortedRowModel(),
+    onRowSelectionChange: setRowSelection,
+    state: {
+      sorting,
+      rowSelection,
+    },
+    manualSorting: true,
   });
 
   async function handleDragEnd(
@@ -59,7 +77,7 @@ export function DataTable<TData, TValue>({
   }
 
   return (
-    <div className="">
+    <div>
       <TableTopBar />
       <Table>
         <TableHeader>

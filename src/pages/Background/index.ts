@@ -97,6 +97,42 @@ chrome.runtime.onMessage.addListener(
         return true;
       }
 
+      case 'sort tours': {
+        getToursFromStorage().then((tours) => {
+          if (tours) {
+            const [{ id, desc }] = message.sorting;
+            const nextTours = tours.toSorted((tourA, tourB) => {
+              const fieldA = tourA[id as keyof typeof tourA];
+              const fieldB = tourB[id as keyof typeof tourB];
+              const asc = !desc;
+
+              if (asc) {
+                if (!fieldA) return 1;
+                if (!fieldB) return 1;
+
+                if (fieldA < fieldB) return -1;
+                if (fieldA > fieldB) return 1;
+                return 0;
+              }
+
+              if (!fieldA) return 1;
+              if (!fieldB) return 1;
+
+              if (fieldA < fieldB) return 1;
+              if (fieldA > fieldB) return -1;
+              return 0;
+            });
+
+            updateToursStorage(nextTours).then((updatedTours) => {
+              sendResponse(updatedTours);
+            });
+          } else {
+            throw Error('Something went wrong');
+          }
+        });
+        return true;
+      }
+
       case 'remove':
         getToursFromStorage().then((tours) => {
           if (tours) {
