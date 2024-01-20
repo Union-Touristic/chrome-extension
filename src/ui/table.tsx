@@ -38,7 +38,10 @@ const TableHead = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <th
     ref={ref}
-    className={cn('px-2 py-3 font-medium first:pl-3 last:pr-3', className)}
+    className={cn(
+      'px-2 py-3 font-medium first:pl-3 last:pr-3 [&:has([role=checkbox])]:pr-0',
+      className
+    )}
     {...props}
   />
 ));

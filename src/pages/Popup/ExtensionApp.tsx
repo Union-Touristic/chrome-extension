@@ -39,6 +39,7 @@ export function ExtensionApp() {
       onDragEnd={handleDragEnd}
       sorting={sorting}
       onSortingChange={onSortingChange}
+      getRowId={(originalRow) => originalRow.id}
     />
   ) : (
     <EmptyListMessage />

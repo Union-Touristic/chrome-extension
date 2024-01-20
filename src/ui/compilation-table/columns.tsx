@@ -1,22 +1,38 @@
 import { Tour } from '@/lib/db/schema';
 import { ColumnDef } from '@tanstack/react-table';
 import {
-  SelectAllToursCheckbox,
-  SelectTourCheckbox,
   CopyTourButton,
   DeleteTourButton,
   TourEditPrice,
   SubText,
   CellWithSubtext,
   ColumnSortHeader,
+  InputCheckbox,
 } from './elements';
 import { getNoun, removeParenthesisAndContentInGivenString } from '@/lib/utils';
 
 export const columns: ColumnDef<Tour>[] = [
   {
-    accessorKey: 'id',
-    header: () => <SelectAllToursCheckbox />,
-    cell: ({ row }) => <SelectTourCheckbox id={row.original.id} />,
+    id: 'select',
+    header: ({ table }) => (
+      <InputCheckbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && 'indeterminate')
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <InputCheckbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
   },
   {
     accessorKey: 'hotel',

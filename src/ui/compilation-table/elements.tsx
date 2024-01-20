@@ -1,3 +1,4 @@
+import * as React from 'react';
 import {
   cn,
   createSortConfig,
@@ -134,6 +135,44 @@ export function SelectAllToursCheckbox() {
       ref={checkbox}
       checked={table.checked}
       onChange={handleCheckboxChange}
+    />
+  );
+}
+
+type InputCheckboxProps = {
+  checked: boolean | 'indeterminate';
+  onCheckedChange: (checked: InputCheckboxProps['checked']) => void;
+};
+
+export function InputCheckbox({
+  checked,
+  onCheckedChange,
+}: InputCheckboxProps) {
+  const checkbox = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    if (!checkbox.current) return;
+
+    if (checked === true) {
+      checkbox.current.checked = true;
+      checkbox.current.indeterminate = false;
+    } else if (checked === false) {
+      checkbox.current.checked = false;
+      checkbox.current.indeterminate = false;
+    } else if (checked === 'indeterminate') {
+      checkbox.current.checked = false;
+      checkbox.current.indeterminate = true;
+    }
+  }, [checked]);
+
+  return (
+    <input
+      type="checkbox"
+      className="-mt-2 h-4 w-4 rounded border-gray-300 text-blue-600 hover:cursor-pointer hover:ring-2 hover:ring-blue-300 hover:ring-offset-2 focus:ring-blue-500"
+      ref={checkbox}
+      onChange={(e) => {
+        onCheckedChange(e.target.checked);
+      }}
     />
   );
 }

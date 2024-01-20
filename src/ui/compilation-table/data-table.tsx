@@ -34,6 +34,7 @@ interface DataTableProps<TData, TValue> {
   onDragEnd?: ({ startIndex, endIndex }: ReorderStartEndIndexes) => void;
   sorting: SortingState;
   onSortingChange: OnChangeFn<SortingState>;
+  getRowId: (originalRow: TData, index: number) => string;
 }
 
 export function DataTable<TData, TValue>({
@@ -42,6 +43,7 @@ export function DataTable<TData, TValue>({
   onDragEnd,
   sorting,
   onSortingChange,
+  getRowId,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
   const table = useReactTable({
@@ -56,6 +58,7 @@ export function DataTable<TData, TValue>({
       rowSelection,
     },
     manualSorting: true,
+    getRowId: getRowId,
   });
 
   async function handleDragEnd(
