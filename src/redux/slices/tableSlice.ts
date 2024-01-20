@@ -4,12 +4,21 @@ import type {
   TourPrice,
   ToursMessenger,
   ReorderStartEndIndexes,
+  RowSelectionMessenger,
 } from '@/lib/definitions';
 import { Tour } from '@/lib/db/schema';
-import { SortingState } from '@tanstack/react-table';
+import { SortingState, RowSelectionState } from '@tanstack/react-table';
 
 export function chromeToursMessenger(t: ToursMessenger) {
   return chrome.runtime.sendMessage<ToursMessenger, Tour[]>(t);
+}
+
+export function chromeRowSelectionMessenger(
+  rowSelection: RowSelectionMessenger
+) {
+  return chrome.runtime.sendMessage<RowSelectionMessenger, RowSelectionState>(
+    rowSelection
+  );
 }
 
 export interface TableState {
@@ -19,6 +28,7 @@ export interface TableState {
   selectedRows: Array<Tour['id']>;
   data: Tour[];
   sorting: SortingState;
+  rowSelection: RowSelectionState;
 }
 
 const initialState: TableState = {
@@ -28,6 +38,7 @@ const initialState: TableState = {
   selectedRows: [],
   data: [],
   sorting: [],
+  rowSelection: {},
 };
 
 export const fetchTours = createAsyncThunk(
@@ -37,7 +48,11 @@ export const fetchTours = createAsyncThunk(
       const tours = await chromeToursMessenger({
         type: 'init',
       });
-      return tours;
+
+      const rowSelection = await chromeRowSelectionMessenger({
+        type: 'rowSelection/init',
+      });
+      return { tours, rowSelection };
     } catch (error) {
       return thunkApi.rejectWithValue(error);
     }
@@ -83,6 +98,21 @@ export const sortTours = createAsyncThunk(
         sorting,
       });
       return { updatedTours, sorting };
+    } catch (error) {
+      return thunkApi.rejectWithValue(error);
+    }
+  }
+);
+
+export const selectTours = createAsyncThunk(
+  'tours/selectTours',
+  async (rowSelection: RowSelectionState, thunkApi) => {
+    try {
+      const selectedRows = await chromeRowSelectionMessenger({
+        type: 'set row selection',
+        data: rowSelection,
+      });
+      return selectedRows;
     } catch (error) {
       return thunkApi.rejectWithValue(error);
     }
@@ -162,7 +192,8 @@ const tableSlice = createSlice({
       .addCase(fetchTours.pending, (state) => state)
       .addCase(fetchTours.fulfilled, (state, action) => ({
         ...state,
-        data: action.payload,
+        data: action.payload.tours,
+        rowSelection: action.payload.rowSelection,
       }))
       .addCase(fetchTours.rejected, (state) => state);
 
@@ -205,6 +236,14 @@ const tableSlice = createSlice({
         return { ...state, sorting, data: updatedTours };
       })
       .addCase(sortTours.rejected, (state) => state);
+
+    builder
+      .addCase(selectTours.pending, (state) => state)
+      .addCase(selectTours.fulfilled, (state, action) => ({
+        ...state,
+        rowSelection: action.payload,
+      }))
+      .addCase(selectTours.rejected, (state) => state);
   },
 });
 

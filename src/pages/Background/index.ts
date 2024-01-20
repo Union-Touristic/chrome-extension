@@ -1,6 +1,7 @@
 import type { Tour } from '@/lib/db/schema';
-import type { ToursMessenger } from '@/lib/definitions';
+import type { RowSelectionMessenger, ToursMessenger } from '@/lib/definitions';
 import { reorder } from '@/lib/utils';
+import { RowSelectionState } from '@tanstack/react-table';
 
 console.log('This is the background page');
 console.log('Put the background scripts here.');
@@ -23,6 +24,21 @@ const addToursToStorage = async (data: Tour[]): Promise<Tour[]> => {
 
   await chrome.storage.local.set({ tours: data });
 
+  return data;
+};
+
+const getRowSelectionFromStorage = async (): Promise<
+  RowSelectionState | undefined
+> => {
+  const storage = await chrome.storage.local.get('rowSelection');
+  const rowSelection: RowSelectionState | undefined = storage['rowSelection'];
+  return rowSelection;
+};
+
+const updateRowSelectionStorage = async (
+  data: RowSelectionState
+): Promise<RowSelectionState> => {
+  await chrome.storage.local.set({ rowSelection: data });
   return data;
 };
 
@@ -147,8 +163,38 @@ chrome.runtime.onMessage.addListener(
           }
         });
         return true;
-      default:
-        throw Error('Unknown message type');
+      // default:
+      //   throw Error('Unknown message type');
+    }
+  }
+);
+
+chrome.runtime.onMessage.addListener(
+  (
+    message: RowSelectionMessenger,
+    _,
+    sendResponse: (response: RowSelectionState) => void
+  ): boolean => {
+    switch (message.type) {
+      case 'rowSelection/init': {
+        getRowSelectionFromStorage().then((rowSelection) => {
+          if (rowSelection) {
+            sendResponse(rowSelection);
+          } else {
+            updateRowSelectionStorage({}).then((value) => sendResponse(value));
+          }
+        });
+        return true;
+      }
+      case 'set row selection': {
+        updateRowSelectionStorage(message.data).then((rowSelection) => {
+          sendResponse(rowSelection);
+        });
+        return true;
+      }
+      // TODO: make one listener
+      // default:
+      //   throw Error('Unknown message type');
     }
   }
 );

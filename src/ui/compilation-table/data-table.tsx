@@ -5,6 +5,7 @@ import {
   RowSelectionState,
   SortingState,
   flexRender,
+  functionalUpdate,
   getCoreRowModel,
   getSortedRowModel,
   useReactTable,
@@ -35,6 +36,8 @@ interface DataTableProps<TData, TValue> {
   sorting: SortingState;
   onSortingChange: OnChangeFn<SortingState>;
   getRowId: (originalRow: TData, index: number) => string;
+  rowSelection: RowSelectionState;
+  onRowSelectionChange: (updatedValue: RowSelectionState) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -44,15 +47,19 @@ export function DataTable<TData, TValue>({
   sorting,
   onSortingChange,
   getRowId,
+  rowSelection,
+  onRowSelectionChange,
 }: DataTableProps<TData, TValue>) {
-  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     onSortingChange: onSortingChange,
     getSortedRowModel: getSortedRowModel(),
-    onRowSelectionChange: setRowSelection,
+    onRowSelectionChange: (updaterOrValue) => {
+      const updatedValue = functionalUpdate(updaterOrValue, rowSelection);
+      onRowSelectionChange(updatedValue);
+    },
     state: {
       sorting,
       rowSelection,

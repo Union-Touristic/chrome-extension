@@ -1,5 +1,5 @@
 import { Tour } from '@/lib/db/schema';
-import { SortingState } from '@tanstack/react-table';
+import { RowSelectionState, SortingState } from '@tanstack/react-table';
 
 export type CompilationStatus = 'Active' | 'Archived';
 
@@ -40,3 +40,12 @@ export type ToursMessenger =
   | { type: 'update tour price'; data: TourPrice }
   | { type: 'update tours order'; data: ReorderStartEndIndexes }
   | { type: 'sort tours'; sorting: SortingState };
+
+export type RowSelectionMessenger =
+  | {
+      type: 'rowSelection/init';
+    }
+  | {
+      type: 'set row selection';
+      data: RowSelectionState;
+    };

@@ -6,6 +6,7 @@ import { EmptyListMessage } from '@/ui/empty-list-message';
 import { fetchCookies } from '@/redux/slices/authSlice';
 import {
   fetchTours,
+  selectTours,
   sortTours,
   updateToursOrder,
 } from '@/redux/slices/tableSlice';
@@ -15,7 +16,9 @@ import { SortingState, Updater, functionalUpdate } from '@tanstack/react-table';
 
 export function ExtensionApp() {
   const isLoggedIn = useAppSelector((state) => state.auth.isLoggedIn);
-  const { data, sorting } = useAppSelector((state) => state.table);
+  const { data, sorting, rowSelection } = useAppSelector(
+    (state) => state.table
+  );
 
   const dispatch = useAppDispatch();
 
@@ -39,6 +42,8 @@ export function ExtensionApp() {
       onDragEnd={handleDragEnd}
       sorting={sorting}
       onSortingChange={onSortingChange}
+      rowSelection={rowSelection}
+      onRowSelectionChange={(newVal) => dispatch(selectTours(newVal))}
       getRowId={(originalRow) => originalRow.id}
     />
   ) : (
