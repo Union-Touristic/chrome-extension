@@ -30,7 +30,7 @@ import { ReorderStartEndIndexes } from '@/lib/definitions';
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  onDragEnd?: ({ startIndex, endIndex }: ReorderStartEndIndexes) => void;
+  onDragEnd: ({ startIndex, endIndex }: ReorderStartEndIndexes) => void;
   sorting: SortingState;
   onSortingChange: (updatedValue: SortingState) => void;
   getRowId: (originalRow: TData, index: number) => string;
@@ -84,7 +84,7 @@ export function DataTable<TData, TValue>({
     // dropped at the same place
     if (startIndex === endIndex) return;
 
-    onDragEnd && onDragEnd({ startIndex, endIndex });
+    onDragEnd({ startIndex, endIndex });
   }
 
   return (

@@ -45,14 +45,16 @@ export const fetchTours = createAsyncThunk(
   'tours/fetchTours',
   async (_, thunkApi) => {
     try {
-      const tours = await chromeToursMessenger({
-        type: 'init',
-      });
+      const { data, sorting } = await chrome.runtime.sendMessage<
+        ToursMessenger,
+        { data: Tour[]; sorting: SortingState }
+      >({ type: 'init' });
 
       const rowSelection = await chromeRowSelectionMessenger({
         type: 'rowSelection/init',
       });
-      return { tours, rowSelection };
+
+      return { data, sorting, rowSelection };
     } catch (error) {
       return thunkApi.rejectWithValue(error);
     }
@@ -121,13 +123,16 @@ export const selectTours = createAsyncThunk(
 
 export const updateToursOrder = createAsyncThunk(
   'tours/updateToursOrder',
-  async (data: ReorderStartEndIndexes, thunkApi) => {
+  async (indexes: ReorderStartEndIndexes, thunkApi) => {
     try {
-      const updatedTours = await chromeToursMessenger({
+      const { data, sorting } = await chrome.runtime.sendMessage<
+        ToursMessenger,
+        { data: Tour[]; sorting: SortingState }
+      >({
         type: 'update tours order',
-        data,
+        data: indexes,
       });
-      return updatedTours;
+      return { data, sorting };
     } catch (error) {
       return thunkApi.rejectWithValue(error);
     }
@@ -192,7 +197,8 @@ const tableSlice = createSlice({
       .addCase(fetchTours.pending, (state) => state)
       .addCase(fetchTours.fulfilled, (state, action) => ({
         ...state,
-        data: action.payload.tours,
+        data: action.payload.data,
+        sorting: action.payload.sorting,
         rowSelection: action.payload.rowSelection,
       }))
       .addCase(fetchTours.rejected, (state) => state);
@@ -225,7 +231,8 @@ const tableSlice = createSlice({
       .addCase(updateToursOrder.pending, (state) => state)
       .addCase(updateToursOrder.fulfilled, (state, action) => ({
         ...state,
-        data: action.payload,
+        data: action.payload.data,
+        sorting: action.payload.sorting,
       }))
       .addCase(updateToursOrder.rejected, (state) => state);
 

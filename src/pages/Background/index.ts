@@ -64,7 +64,8 @@ chrome.runtime.onMessage.addListener(
   (
     message: ToursMessenger,
     _,
-    sendResponse: (response: Tour[]) => void
+    // TODO: refactor response type
+    sendResponse: (response: Tour[] | Record<string, any>) => void
   ): boolean => {
     switch (message.type) {
       case 'retrieve':
@@ -73,17 +74,29 @@ chrome.runtime.onMessage.addListener(
         });
         return true;
 
-      case 'init':
-        getToursFromStorage().then((tours) => {
-          tours ? sendResponse(tours) : sendResponse(Array(0));
-        });
-        return true;
+      case 'init': {
+        Promise.all([getToursFromStorage(), getSortingFromStorage()]).then(
+          (value) => {
+            const [tours, sorting] = value;
+            const toursToSend: Tour[] = tours || Array(0);
+            const sortingToSend: SortingState = sorting || Array(0);
+            sendResponse({ data: toursToSend, sorting: sortingToSend });
+          }
+        );
 
-      case 'add':
-        addToursToStorage(message.data).then((tours) => {
+        return true;
+      }
+
+      case 'add': {
+        Promise.all([
+          addToursToStorage(message.data),
+          updateSortingStorage(Array(0)),
+        ]).then((value) => {
+          const [tours, _] = value;
           sendResponse(tours);
         });
         return true;
+      }
 
       case 'update':
         updateToursStorage(message.data).then((updatedTours) => {
@@ -116,8 +129,12 @@ chrome.runtime.onMessage.addListener(
           if (tours) {
             const { startIndex, endIndex } = message.data;
             const nextTours = reorder(tours, startIndex, endIndex);
-            updateToursStorage(nextTours).then((updatedTours) => {
-              sendResponse(updatedTours);
+            Promise.all([
+              updateToursStorage(nextTours),
+              updateSortingStorage(Array(0)),
+            ]).then((value) => {
+              const [data, sorting] = value;
+              sendResponse({ data, sorting });
             });
           } else {
             throw Error('Something went wrong');
