@@ -17,7 +17,6 @@ import {
   ClipboardDocumentIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline';
-import { ComponentProps, useRef, useState } from 'react';
 
 import type { Tour, TourInsert } from '@/lib/db/schema';
 import { TourPrice, ToursMessenger } from '@/lib/definitions';
@@ -111,7 +110,7 @@ type CopyTourButtonProps = {
 };
 
 export function CopyTourButton({ singleTour, className }: CopyTourButtonProps) {
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = React.useState(false);
 
   async function handleCopyButtonClick() {
     const text = tourToText(singleTour);
@@ -186,7 +185,7 @@ export function TableTopBarCopyButton({
   className,
   children,
 }: TableTopBarCopyButtonProps) {
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = React.useState(false);
   const { rowSelection, data } = useAppSelector((state) => state.table);
 
   const rowSelectionArray = Object.entries(rowSelection);
@@ -229,11 +228,10 @@ export function TableTopBarCopyButton({
 type TourEditPriceProps = TourPrice;
 
 export function TourEditPrice({ id, price }: TourEditPriceProps) {
-  // TODO: refactor this code. Make component accept only id and price
-  const [value, setValue] = useState(frenchFormatter.format(price));
+  const [value, setValue] = React.useState(frenchFormatter.format(price));
   const dispatch = useAppDispatch();
-  const initialPriceRef = useRef(price);
-  const inputRef = useRef<HTMLInputElement | null>(null);
+  const initialPriceRef = React.useRef(price);
+  const inputRef = React.useRef<HTMLInputElement | null>(null);
 
   const handlePriceInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const re = /^[\d\s]+$/;
@@ -322,7 +320,7 @@ export function SuccessNotificationMessage() {
 }
 
 export function UpdateButton() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
   const { notificationAction } = useNotification();
   const data = useAppSelector((state) => state.table.data);
   const dispatch = useAppDispatch();
@@ -364,6 +362,7 @@ export function UpdateButton() {
           type: 'update',
           data: [],
         });
+        // TODO: remove tours, clear all state
         dispatch(updateTours([]));
       }
 
@@ -436,7 +435,7 @@ export function SubText({
   className,
   children,
   ...props
-}: ComponentProps<'span'>) {
+}: React.ComponentProps<'span'>) {
   return (
     <span
       className={cn(
