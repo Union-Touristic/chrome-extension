@@ -19,7 +19,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 import type { Tour, TourInsert } from '@/lib/db/schema';
-import { TourPrice, ToursMessenger } from '@/lib/definitions';
+import { TourPrice, TableMessenger } from '@/lib/definitions';
 import { Loader2 } from 'lucide-react';
 import { useNotification } from '@/ui/use-notification';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
@@ -358,7 +358,7 @@ export function UpdateButton() {
           message: <SuccessNotificationMessage />,
         });
 
-        await chrome.runtime.sendMessage<ToursMessenger, Tour[]>({
+        await chrome.runtime.sendMessage<TableMessenger, Tour[]>({
           type: 'update',
           data: [],
         });

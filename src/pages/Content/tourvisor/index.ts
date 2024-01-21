@@ -1,5 +1,5 @@
 import type { Tour } from '@/lib/db/schema';
-import type { ToursMessenger } from '@/lib/definitions';
+import type { TableMessenger } from '@/lib/definitions';
 import {
   collectTourOptions,
   createAddButton,
@@ -144,7 +144,7 @@ function handleTTBodyElementMutation(
       button.disabled = true;
 
       chrome.runtime
-        .sendMessage<ToursMessenger, Tour[]>({
+        .sendMessage<TableMessenger, Tour[]>({
           type: 'add',
           data: [tourOptions],
         })
@@ -157,7 +157,7 @@ function handleTTBodyElementMutation(
     // then make button with '--added' css class and make it disabled
     // do not add event listeneres
     chrome.runtime
-      .sendMessage<ToursMessenger, Tour[]>({ type: 'retrieve' })
+      .sendMessage<TableMessenger, Tour[]>({ type: 'retrieve' })
       .then((toursInStorage) => {
         toursInStorage.forEach((tour) => {
           if (tour.id === tourOptions.id) {

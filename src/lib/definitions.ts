@@ -26,7 +26,7 @@ export type Breadcrumb = {
 };
 
 // Definitions for chrome runtime
-export type ToursMessenger =
+export type TableMessenger =
   | { type: 'retrieve' }
   | { type: 'init' }
   | { type: 'add'; data: Tour[] }
@@ -34,13 +34,5 @@ export type ToursMessenger =
   | { type: 'remove'; data: Tour['id'] | Tour['id'][] }
   | { type: 'update tour price'; data: TourPrice }
   | { type: 'update tours order'; data: ReorderStartEndIndexes }
-  | { type: 'sort tours'; sorting: SortingState };
-
-export type RowSelectionMessenger =
-  | {
-      type: 'rowSelection/init';
-    }
-  | {
-      type: 'set row selection';
-      data: RowSelectionState;
-    };
+  | { type: 'sort tours'; sorting: SortingState }
+  | { type: 'setRowSelection'; rowSelection: RowSelectionState };

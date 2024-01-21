@@ -1,23 +1,14 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type {
   TourPrice,
-  ToursMessenger,
+  TableMessenger,
   ReorderStartEndIndexes,
-  RowSelectionMessenger,
 } from '@/lib/definitions';
 import { Tour } from '@/lib/db/schema';
 import { SortingState, RowSelectionState } from '@tanstack/react-table';
 
-export function chromeToursMessenger(t: ToursMessenger) {
-  return chrome.runtime.sendMessage<ToursMessenger, Tour[]>(t);
-}
-
-export function chromeRowSelectionMessenger(
-  rowSelection: RowSelectionMessenger
-) {
-  return chrome.runtime.sendMessage<RowSelectionMessenger, RowSelectionState>(
-    rowSelection
-  );
+export function chromeToursMessenger(t: TableMessenger) {
+  return chrome.runtime.sendMessage<TableMessenger, Tour[]>(t);
 }
 
 export interface TableState {
@@ -32,18 +23,14 @@ const initialState: TableState = {
   rowSelection: {},
 };
 
-export const fetchTours = createAsyncThunk(
-  'tours/fetchTours',
+export const fetchInitialState = createAsyncThunk(
+  'table/fetchInitialState',
   async (_, thunkApi) => {
     try {
-      const { data, sorting } = await chrome.runtime.sendMessage<
-        ToursMessenger,
-        { data: Tour[]; sorting: SortingState }
+      const { data, sorting, rowSelection } = await chrome.runtime.sendMessage<
+        TableMessenger,
+        TableState
       >({ type: 'init' });
-
-      const rowSelection = await chromeRowSelectionMessenger({
-        type: 'rowSelection/init',
-      });
 
       return { data, sorting, rowSelection };
     } catch (error) {
@@ -72,7 +59,7 @@ export const updateTourPrice = createAsyncThunk(
   async (newTourPrice: TourPrice, thunkApi) => {
     try {
       const { data, sorting } = await chrome.runtime.sendMessage<
-        ToursMessenger,
+        TableMessenger,
         { data: Tour[]; sorting: SortingState }
       >({
         type: 'update tour price',
@@ -100,15 +87,18 @@ export const sortTours = createAsyncThunk(
   }
 );
 
-export const selectTours = createAsyncThunk(
-  'tours/selectTours',
+export const setRowSelection = createAsyncThunk(
+  'table/setRowSelection',
   async (rowSelection: RowSelectionState, thunkApi) => {
     try {
-      const selectedRows = await chromeRowSelectionMessenger({
-        type: 'set row selection',
-        data: rowSelection,
+      const tableState = await chrome.runtime.sendMessage<
+        TableMessenger,
+        TableState
+      >({
+        type: 'setRowSelection',
+        rowSelection,
       });
-      return selectedRows;
+      return tableState.rowSelection;
     } catch (error) {
       return thunkApi.rejectWithValue(error);
     }
@@ -120,7 +110,7 @@ export const updateToursOrder = createAsyncThunk(
   async (indexes: ReorderStartEndIndexes, thunkApi) => {
     try {
       const { data, sorting } = await chrome.runtime.sendMessage<
-        ToursMessenger,
+        TableMessenger,
         { data: Tour[]; sorting: SortingState }
       >({
         type: 'update tours order',
@@ -138,7 +128,7 @@ export const removeTour = createAsyncThunk(
   async (idForRemove: Tour['id'] | Tour['id'][], thunkApi) => {
     try {
       const { data, rowSelection } = await chrome.runtime.sendMessage<
-        ToursMessenger,
+        TableMessenger,
         { data: Tour[]; rowSelection: RowSelectionState }
       >({
         type: 'remove',
@@ -157,14 +147,14 @@ const tableSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchTours.pending, (state) => state)
-      .addCase(fetchTours.fulfilled, (state, action) => ({
+      .addCase(fetchInitialState.pending, (state) => state)
+      .addCase(fetchInitialState.fulfilled, (state, action) => ({
         ...state,
         data: action.payload.data,
         sorting: action.payload.sorting,
         rowSelection: action.payload.rowSelection,
       }))
-      .addCase(fetchTours.rejected, (state) => state);
+      .addCase(fetchInitialState.rejected, (state) => state);
 
     builder
       .addCase(updateTours.pending, (state) => state)
@@ -210,12 +200,12 @@ const tableSlice = createSlice({
       .addCase(sortTours.rejected, (state) => state);
 
     builder
-      .addCase(selectTours.pending, (state) => state)
-      .addCase(selectTours.fulfilled, (state, action) => ({
+      .addCase(setRowSelection.pending, (state) => state)
+      .addCase(setRowSelection.fulfilled, (state, action) => ({
         ...state,
         rowSelection: action.payload,
       }))
-      .addCase(selectTours.rejected, (state) => state);
+      .addCase(setRowSelection.rejected, (state) => state);
   },
 });
 

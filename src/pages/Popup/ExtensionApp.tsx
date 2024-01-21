@@ -5,8 +5,8 @@ import { Login } from '@/ui/login';
 import { EmptyListMessage } from '@/ui/empty-list-message';
 import { fetchCookies } from '@/redux/slices/authSlice';
 import {
-  fetchTours,
-  selectTours,
+  fetchInitialState,
+  setRowSelection,
   sortTours,
   updateToursOrder,
 } from '@/redux/slices/tableSlice';
@@ -21,7 +21,7 @@ export function ExtensionApp() {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    Promise.all([dispatch(fetchCookies()), dispatch(fetchTours())]);
+    Promise.all([dispatch(fetchCookies()), dispatch(fetchInitialState())]);
   }, [dispatch]);
 
   const tableOrEmptyMessage = data.length ? (
@@ -32,7 +32,7 @@ export function ExtensionApp() {
       sorting={sorting}
       onSortingChange={(newVal) => dispatch(sortTours(newVal))}
       rowSelection={rowSelection}
-      onRowSelectionChange={(newVal) => dispatch(selectTours(newVal))}
+      onRowSelectionChange={(newVal) => dispatch(setRowSelection(newVal))}
       getRowId={(originalRow) => originalRow.id}
     />
   ) : (

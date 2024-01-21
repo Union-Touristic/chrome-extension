@@ -1,12 +1,12 @@
 import type { Tour } from '@/lib/db/schema';
-import type { RowSelectionMessenger, ToursMessenger } from '@/lib/definitions';
+import type { TableMessenger } from '@/lib/definitions';
 import { reorder } from '@/lib/utils';
 import { RowSelectionState, SortingState } from '@tanstack/react-table';
 
 console.log('This is the background page');
 console.log('Put the background scripts here.');
 
-const getToursFromStorage = async (): Promise<Tour[]> => {
+const getDataFromStorage = async (): Promise<Tour[]> => {
   const storage = await chrome.storage.local.get('tours');
   const tours: Tour[] | undefined = storage['tours'];
   if (tours === undefined) return Array(0);
@@ -14,7 +14,7 @@ const getToursFromStorage = async (): Promise<Tour[]> => {
 };
 
 const addToursToStorage = async (data: Tour[]): Promise<Tour[]> => {
-  const tours = await getToursFromStorage();
+  const tours = await getDataFromStorage();
 
   if (tours) {
     const updatedTours = [...tours, ...data];
@@ -36,15 +36,16 @@ const getRowSelectionFromStorage = async (): Promise<RowSelectionState> => {
 };
 
 const updateRowSelectionStorage = async (
-  data: RowSelectionState
+  rowSelection: RowSelectionState
 ): Promise<RowSelectionState> => {
-  await chrome.storage.local.set({ rowSelection: data });
-  return data;
+  await chrome.storage.local.set({ rowSelection });
+  return rowSelection;
 };
 
-const getSortingFromStorage = async (): Promise<SortingState | undefined> => {
+const getSortingFromStorage = async (): Promise<SortingState> => {
   const storage = await chrome.storage.local.get('sorting');
   const sorting: SortingState | undefined = storage['sorting'];
+  if (sorting === undefined) return Array(0);
   return sorting;
 };
 
@@ -62,28 +63,27 @@ const updateToursStorage = async (data: Tour[]): Promise<Tour[]> => {
 
 chrome.runtime.onMessage.addListener(
   (
-    message: ToursMessenger,
+    message: TableMessenger,
     _,
     // TODO: refactor response type
     sendResponse: (response: Tour[] | Record<string, any>) => void
   ): boolean => {
     switch (message.type) {
       case 'retrieve':
-        getToursFromStorage().then((tours) => {
+        getDataFromStorage().then((tours) => {
           tours ? sendResponse(tours) : sendResponse(Array(0));
         });
         return true;
 
       case 'init': {
-        Promise.all([getToursFromStorage(), getSortingFromStorage()]).then(
-          (value) => {
-            const [tours, sorting] = value;
-            const toursToSend: Tour[] = tours || Array(0);
-            const sortingToSend: SortingState = sorting || Array(0);
-            sendResponse({ data: toursToSend, sorting: sortingToSend });
-          }
-        );
-
+        Promise.all([
+          getDataFromStorage(),
+          getSortingFromStorage(),
+          getRowSelectionFromStorage(),
+        ]).then((value) => {
+          const [data, sorting, rowSelection] = value;
+          sendResponse({ data, sorting, rowSelection });
+        });
         return true;
       }
 
@@ -92,8 +92,8 @@ chrome.runtime.onMessage.addListener(
           addToursToStorage(message.data),
           updateSortingStorage(Array(0)),
         ]).then((value) => {
-          const [tours, _] = value;
-          sendResponse(tours);
+          const [data, _] = value;
+          sendResponse(data);
         });
         return true;
       }
@@ -105,7 +105,7 @@ chrome.runtime.onMessage.addListener(
         return true;
 
       case 'update tour price': {
-        getToursFromStorage().then((tours) => {
+        getDataFromStorage().then((tours) => {
           const nextTours = tours.map((tour) => {
             if (tour.id === message.data.id) {
               return { ...tour, price: message.data.price };
@@ -126,7 +126,7 @@ chrome.runtime.onMessage.addListener(
       }
 
       case 'update tours order': {
-        getToursFromStorage().then((tours) => {
+        getDataFromStorage().then((tours) => {
           if (tours) {
             const { startIndex, endIndex } = message.data;
             const nextTours = reorder(tours, startIndex, endIndex);
@@ -145,7 +145,7 @@ chrome.runtime.onMessage.addListener(
       }
 
       case 'sort tours': {
-        getToursFromStorage().then((tours) => {
+        getDataFromStorage().then((tours) => {
           if (tours) {
             const [{ id, desc }] = message.sorting;
             const nextTours = tours.toSorted((tourA, tourB) => {
@@ -184,8 +184,15 @@ chrome.runtime.onMessage.addListener(
         return true;
       }
 
+      case 'setRowSelection': {
+        updateRowSelectionStorage(message.rowSelection).then((rowSelection) => {
+          sendResponse({ rowSelection });
+        });
+        return true;
+      }
+
       case 'remove': {
-        Promise.all([getToursFromStorage(), getRowSelectionFromStorage()]).then(
+        Promise.all([getDataFromStorage(), getRowSelectionFromStorage()]).then(
           (value) => {
             const [data, rowSelection] = value;
 
@@ -212,38 +219,38 @@ chrome.runtime.onMessage.addListener(
         );
         return true;
       }
-      // default:
-      //   throw Error('Unknown message type');
+      default:
+        throw Error('Unknown message type');
     }
   }
 );
 
-chrome.runtime.onMessage.addListener(
-  (
-    message: RowSelectionMessenger,
-    _,
-    sendResponse: (response: RowSelectionState) => void
-  ): boolean => {
-    switch (message.type) {
-      case 'rowSelection/init': {
-        getRowSelectionFromStorage().then((rowSelection) => {
-          if (rowSelection) {
-            sendResponse(rowSelection);
-          } else {
-            updateRowSelectionStorage({}).then((value) => sendResponse(value));
-          }
-        });
-        return true;
-      }
-      case 'set row selection': {
-        updateRowSelectionStorage(message.data).then((rowSelection) => {
-          sendResponse(rowSelection);
-        });
-        return true;
-      }
-      // TODO: make one listener
-      // default:
-      //   throw Error('Unknown message type');
-    }
-  }
-);
+// chrome.runtime.onMessage.addListener(
+//   (
+//     message: RowSelectionMessenger,
+//     _,
+//     sendResponse: (response: RowSelectionState) => void
+//   ): boolean => {
+//     switch (message.type) {
+//       case 'rowSelection/init': {
+//         getRowSelectionFromStorage().then((rowSelection) => {
+//           if (rowSelection) {
+//             sendResponse(rowSelection);
+//           } else {
+//             updateRowSelectionStorage({}).then((value) => sendResponse(value));
+//           }
+//         });
+//         return true;
+//       }
+//       case 'set row selection': {
+//         updateRowSelectionStorage(message.data).then((rowSelection) => {
+//           sendResponse(rowSelection);
+//         });
+//         return true;
+//       }
+//       // TODO: make one listener
+//       // default:
+//       //   throw Error('Unknown message type');
+//     }
+//   }
+// );
