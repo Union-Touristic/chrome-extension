@@ -69,13 +69,16 @@ export const updateTours = createAsyncThunk(
 
 export const updateTourPrice = createAsyncThunk(
   'tours/updateTourPrice',
-  async (data: TourPrice, thunkApi) => {
+  async (newTourPrice: TourPrice, thunkApi) => {
     try {
-      const updatedTours = await chromeToursMessenger({
+      const { data, sorting } = await chrome.runtime.sendMessage<
+        ToursMessenger,
+        { data: Tour[]; sorting: SortingState }
+      >({
         type: 'update tour price',
-        data,
+        data: newTourPrice,
       });
-      return updatedTours;
+      return { data, sorting };
     } catch (error) {
       return thunkApi.rejectWithValue(error);
     }
@@ -184,7 +187,8 @@ const tableSlice = createSlice({
       .addCase(updateTourPrice.pending, (state) => state)
       .addCase(updateTourPrice.fulfilled, (state, action) => ({
         ...state,
-        data: action.payload,
+        data: action.payload.data,
+        sorting: action.payload.sorting,
       }))
       .addCase(updateTourPrice.rejected, (state) => state);
 

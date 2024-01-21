@@ -104,25 +104,26 @@ chrome.runtime.onMessage.addListener(
         });
         return true;
 
-      case 'update tour price':
+      case 'update tour price': {
         getToursFromStorage().then((tours) => {
-          if (tours) {
-            const nextTours = tours.map((tour) => {
-              if (tour.id === message.data.id) {
-                return { ...tour, price: message.data.price };
-              } else {
-                return tour;
-              }
-            });
+          const nextTours = tours.map((tour) => {
+            if (tour.id === message.data.id) {
+              return { ...tour, price: message.data.price };
+            } else {
+              return tour;
+            }
+          });
 
-            updateToursStorage(nextTours).then((updatedTours) => {
-              sendResponse(updatedTours);
-            });
-          } else {
-            throw Error('Something went wrong');
-          }
+          Promise.all([
+            updateToursStorage(nextTours),
+            updateSortingStorage(Array(0)),
+          ]).then((value) => {
+            const [data, sorting] = value;
+            sendResponse({ data, sorting });
+          });
         });
         return true;
+      }
 
       case 'update tours order': {
         getToursFromStorage().then((tours) => {
