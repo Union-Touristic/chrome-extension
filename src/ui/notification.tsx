@@ -5,16 +5,16 @@ import {
   ExclamationCircleIcon,
 } from '@heroicons/react/24/outline';
 import { XMarkIcon } from '@heroicons/react/20/solid';
-import { useNotification } from '@/ui/use-notification';
 import { Fragment } from 'react';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { hideNotification } from '@/redux/slices/notificationSlice';
 
 export function Notification() {
-  const { notification, notificationAction } = useNotification();
+  const dispatch = useAppDispatch();
+  const notification = useAppSelector((state) => state.notification);
 
   const handleCloseButtonClick = () => {
-    notificationAction({
-      type: 'remove',
-    });
+    dispatch(hideNotification());
   };
 
   return (

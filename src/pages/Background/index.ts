@@ -1,80 +1,28 @@
+import { addToursToStorage, updateSortingStorage } from '@/api/chrome';
 import type { Tour } from '@/lib/db/schema';
-import type { ToursMessenger } from '@/lib/definitions';
+import type { TableMessenger } from '@/lib/definitions';
 
 console.log('This is the background page');
 console.log('Put the background scripts here.');
 
-const getToursFromStorage = async () => {
-  const storage = await chrome.storage.local.get('tours');
-  const tours: Tour[] | undefined = storage['tours'];
-  return tours;
-};
-
-const addToursToStorage = async (data: Tour[]): Promise<Tour[]> => {
-  const tours = await getToursFromStorage();
-
-  if (tours) {
-    const updatedTours = [...tours, ...data];
-    await chrome.storage.local.set({ tours: updatedTours });
-
-    return updatedTours;
-  }
-
-  await chrome.storage.local.set({ tours: data });
-
-  return data;
-};
-
-const updateToursStorage = async (data: Tour[]): Promise<Tour[]> => {
-  await chrome.storage.local.set({ tours: data });
-  return data;
-};
-
 chrome.runtime.onMessage.addListener(
   (
-    message: ToursMessenger,
+    message: TableMessenger,
     _,
-    sendResponse: (response: Tour[]) => void
+    // TODO: refactor response type
+    sendResponse: (response: Tour[] | Record<string, any>) => void
   ): boolean => {
     switch (message.type) {
-      case 'retrieve':
-        getToursFromStorage().then((tours) => {
-          tours ? sendResponse(tours) : sendResponse(Array(0));
+      case 'add': {
+        Promise.all([
+          addToursToStorage(message.data),
+          updateSortingStorage(Array(0)),
+        ]).then((value) => {
+          const [data] = value;
+          sendResponse(data);
         });
         return true;
-
-      case 'init':
-        getToursFromStorage().then((tours) => {
-          tours ? sendResponse(tours) : sendResponse(Array(0));
-        });
-        return true;
-
-      case 'add':
-        addToursToStorage(message.data).then((tours) => {
-          sendResponse(tours);
-        });
-        return true;
-
-      case 'update':
-        updateToursStorage(message.data).then((updatedTours) => {
-          sendResponse(updatedTours);
-        });
-        return true;
-
-      case 'remove':
-        getToursFromStorage().then((tours) => {
-          if (tours) {
-            const filteredTours = tours.filter(
-              (tour) => !message.data.includes(tour.id)
-            );
-            updateToursStorage(filteredTours).then((updatedTours) => {
-              sendResponse(updatedTours);
-            });
-          } else {
-            throw Error('Something went wrong.');
-          }
-        });
-        return true;
+      }
       default:
         throw Error('Unknown message type');
     }

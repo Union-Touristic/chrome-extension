@@ -1,13 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { toursReducer } from './slices/toursSlice';
 import { authReducer } from './slices/authSlice';
 import { tableReducer } from './slices/tableSlice';
+import { notificationReducer } from './slices/notificationSlice';
 
 export const store = configureStore({
   reducer: {
-    tours: toursReducer,
     auth: authReducer,
     table: tableReducer,
+    notification: notificationReducer,
   },
 });
 

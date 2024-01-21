@@ -3,10 +3,10 @@ import type {
   DraggableStateSnapshot,
   DraggingStyle,
   NotDraggingStyle,
-} from 'react-beautiful-dnd';
+} from '@hello-pangea/dnd';
 import { twMerge } from 'tailwind-merge';
 import type { Tour } from '@/lib/db/schema';
-import type { ToursSortConfig } from '@/lib/definitions';
+import { SortingState } from '@tanstack/react-table';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -41,39 +41,6 @@ export function txtCenter(
     fillchar.repeat(leftPadding) + inputString + fillchar.repeat(rightPadding);
 
   return paddedString;
-}
-
-export function generatePagination(currentPage: number, totalPages: number) {
-  // If the total number of pages is 7 or less,
-  // display all pages without any ellipsis.
-  if (totalPages <= 7) {
-    return Array.from({ length: totalPages }, (_, i) => i + 1);
-  }
-
-  // If the current page is among the first 3 pages,
-  // show the first 3, an ellipsis, and the last 2 pages.
-  if (currentPage <= 3) {
-    return [1, 2, 3, '...', totalPages - 1, totalPages];
-  }
-
-  // If the current page is among the last 3 pages,
-  // show the first 2, an ellipsis, and the last 3 pages.
-  if (currentPage >= totalPages - 2) {
-    return [1, 2, '...', totalPages - 2, totalPages - 1, totalPages];
-  }
-
-  // If the current page is somewhere in the middle,
-  // show the first page, an ellipsis, the current page and its neighbors,
-  // another ellipsis, and the last page.
-  return [
-    1,
-    '...',
-    currentPage - 1,
-    currentPage,
-    currentPage + 1,
-    '...',
-    totalPages,
-  ];
 }
 
 export function getNoun(
@@ -150,23 +117,6 @@ export function tourToText(tour: Tour) {
   return text.trim();
 }
 
-export function createSortConfig(
-  sortConfig: ToursSortConfig | null,
-  configKey: ToursSortConfig['sortKey']
-): ToursSortConfig {
-  let direction: ToursSortConfig['direction'] = 'asc';
-
-  if (
-    sortConfig &&
-    sortConfig.sortKey === configKey &&
-    sortConfig.direction === 'asc'
-  ) {
-    direction = 'dsc';
-  }
-
-  return { sortKey: configKey, direction: direction };
-}
-
 export function reorder<ListItem>(
   list: ListItem[],
   startIndex: number,
@@ -177,6 +127,33 @@ export function reorder<ListItem>(
   result.splice(endIndex, 0, removed);
 
   return result;
+}
+
+export function sort<List>(list: List[], sorting: SortingState) {
+  const [{ id, desc }] = sorting;
+  const sortedList = list.toSorted((itemA, itemB) => {
+    const fieldA = itemA[id as keyof typeof itemA];
+    const fieldB = itemB[id as keyof typeof itemB];
+    const asc = !desc;
+
+    if (asc) {
+      if (!fieldA) return 1;
+      if (!fieldB) return 1;
+
+      if (fieldA < fieldB) return -1;
+      if (fieldA > fieldB) return 1;
+      return 0;
+    }
+
+    if (!fieldA) return 1;
+    if (!fieldB) return 1;
+
+    if (fieldA < fieldB) return 1;
+    if (fieldA > fieldB) return -1;
+    return 0;
+  });
+
+  return sortedList;
 }
 
 export function getStyle(
