@@ -1,6 +1,5 @@
-import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type {
-  ToursSortConfig,
   TourPrice,
   ToursMessenger,
   ReorderStartEndIndexes,
@@ -22,20 +21,12 @@ export function chromeRowSelectionMessenger(
 }
 
 export interface TableState {
-  sortConfig: ToursSortConfig | null;
-  checked: boolean;
-  indeterminate: boolean;
-  selectedRows: Array<Tour['id']>;
   data: Tour[];
   sorting: SortingState;
   rowSelection: RowSelectionState;
 }
 
 const initialState: TableState = {
-  sortConfig: null,
-  checked: false,
-  indeterminate: false,
-  selectedRows: [],
   data: [],
   sorting: [],
   rowSelection: {},
@@ -141,13 +132,16 @@ export const updateToursOrder = createAsyncThunk(
 
 export const removeTour = createAsyncThunk(
   'tours/removeTour',
-  async (data: Tour['id'] | Tour['id'][], thunkApi) => {
+  async (idForRemove: Tour['id'] | Tour['id'][], thunkApi) => {
     try {
-      const updatedTours = await chromeToursMessenger({
+      const { data, rowSelection } = await chrome.runtime.sendMessage<
+        ToursMessenger,
+        { data: Tour[]; rowSelection: RowSelectionState }
+      >({
         type: 'remove',
-        data: data,
+        data: idForRemove,
       });
-      return updatedTours;
+      return { data, rowSelection };
     } catch (error) {
       return thunkApi.rejectWithValue(error);
     }
@@ -157,41 +151,7 @@ export const removeTour = createAsyncThunk(
 const tableSlice = createSlice({
   name: 'table',
   initialState: initialState,
-  reducers: {
-    setSortConfig: (state, action: PayloadAction<ToursSortConfig | null>) => {
-      return { ...state, sortConfig: action.payload };
-    },
-    setSorting: (state, action: PayloadAction<SortingState>) => {
-      return { ...state, sorting: action.payload };
-    },
-    selectedRowsChanged: (
-      state,
-      action: PayloadAction<Pick<TableState, 'checked' | 'indeterminate'>>
-    ) => {
-      const { checked, indeterminate } = action.payload;
-      return { ...state, checked, indeterminate };
-    },
-    toggleAll: (
-      state,
-      action: PayloadAction<
-        Pick<TableState, 'selectedRows' | 'checked' | 'indeterminate'>
-      >
-    ) => {
-      const { checked, indeterminate, selectedRows } = action.payload;
-      return {
-        ...state,
-        selectedRows,
-        checked,
-        indeterminate,
-      };
-    },
-    updateSelectedRows: (
-      state,
-      action: PayloadAction<Pick<TableState, 'selectedRows'>>
-    ) => {
-      return { ...state, selectedRows: action.payload.selectedRows };
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(fetchTours.pending, (state) => state)
@@ -215,7 +175,8 @@ const tableSlice = createSlice({
       .addCase(removeTour.pending, (state) => state)
       .addCase(removeTour.fulfilled, (state, action) => ({
         ...state,
-        data: action.payload,
+        data: action.payload.data,
+        rowSelection: action.payload.rowSelection,
       }))
       .addCase(removeTour.rejected, (state) => state);
 
@@ -253,13 +214,5 @@ const tableSlice = createSlice({
       .addCase(selectTours.rejected, (state) => state);
   },
 });
-
-export const {
-  setSorting,
-  setSortConfig,
-  selectedRowsChanged,
-  toggleAll,
-  updateSelectedRows,
-} = tableSlice.actions;
 
 export const tableReducer = tableSlice.reducer;

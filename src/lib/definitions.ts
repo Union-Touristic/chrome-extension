@@ -3,11 +3,6 @@ import { RowSelectionState, SortingState } from '@tanstack/react-table';
 
 export type CompilationStatus = 'Active' | 'Archived';
 
-export type ToursSortConfig = {
-  sortKey: Extract<keyof Tour, 'departureDate' | 'price'>;
-  direction: 'asc' | 'dsc';
-};
-
 export type TourPrice = {
   id: Tour['id'];
   price: NonNullable<Tour['price']>;

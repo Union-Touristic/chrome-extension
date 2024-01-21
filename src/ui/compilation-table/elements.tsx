@@ -1,7 +1,6 @@
 import * as React from 'react';
 import {
   cn,
-  createSortConfig,
   delay,
   frenchFormatter,
   setClipboard,
@@ -18,126 +17,19 @@ import {
   ClipboardDocumentIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline';
-import { ComponentProps, useEffect, useRef, useState } from 'react';
+import { ComponentProps, useRef, useState } from 'react';
 
 import type { Tour, TourInsert } from '@/lib/db/schema';
-import { TourPrice, ToursMessenger, ToursSortConfig } from '@/lib/definitions';
+import { TourPrice, ToursMessenger } from '@/lib/definitions';
 import { Loader2 } from 'lucide-react';
 import { useNotification } from '@/ui/use-notification';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
   removeTour,
-  selectedRowsChanged,
-  setSortConfig,
-  toggleAll,
-  updateSelectedRows,
   updateTourPrice,
   updateTours,
 } from '@/redux/slices/tableSlice';
 import { Column } from '@tanstack/react-table';
-
-type SortToursButtonProps = {
-  sortKey: ToursSortConfig['sortKey'];
-  className?: string;
-  children?: React.ReactNode;
-};
-
-export function SortToursButton({
-  sortKey,
-  className,
-  children,
-}: SortToursButtonProps) {
-  const table = useAppSelector((state) => state.table);
-  const data = table.data;
-  const dispatch = useAppDispatch();
-
-  const sc = table.sortConfig;
-
-  async function handleSortTable(sortKey: SortToursButtonProps['sortKey']) {
-    const config = createSortConfig(table.sortConfig, sortKey);
-    dispatch(setSortConfig(config));
-
-    const copiedData = [...data];
-
-    const sortedTours = copiedData.sort((a, b) => {
-      const key = config.sortKey;
-      // TODO: fix possible null
-      if (a[key]! < b[key]!) {
-        return config.direction === 'asc' ? -1 : 1;
-      }
-      if (a[key]! > b[key]!) {
-        return config.direction === 'asc' ? 1 : -1;
-      }
-      return 0;
-    });
-
-    await dispatch(updateTours(sortedTours));
-  }
-
-  const Icon = () => {
-    if (sc) {
-      if (sc.sortKey === sortKey && sc.direction === 'asc') {
-        return <ChevronDownIcon className="ml-1 h-4 w-4 text-indigo-700" />;
-      } else if (sc.sortKey === sortKey && sc.direction === 'dsc') {
-        return <ChevronUpIcon className="ml-1 h-4 w-4 text-indigo-700" />;
-      }
-    }
-    return <ChevronUpDownIcon className="ml-1 h-4 w-4 text-gray-500" />;
-  };
-
-  return (
-    <button
-      className={cn(
-        'flex rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
-        className
-      )}
-      type="button"
-      onClick={() => handleSortTable(sortKey)}
-    >
-      <span>{children}</span>
-      <Icon />
-    </button>
-  );
-}
-
-export function SelectAllToursCheckbox() {
-  const table = useAppSelector((state) => state.table);
-  const data = table.data;
-  const dispatch = useAppDispatch();
-  const checkbox = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const isIndeterminate =
-      table.selectedRows.length > 0 && table.selectedRows.length < data.length;
-    dispatch(
-      selectedRowsChanged({
-        checked: table.selectedRows.length === data.length,
-        indeterminate: isIndeterminate,
-      })
-    );
-
-    if (checkbox && checkbox.current) {
-      checkbox.current.indeterminate = isIndeterminate;
-    }
-  }, [dispatch, data.length, table.selectedRows.length]);
-
-  const handleCheckboxChange = () => {
-    const selectedRows =
-      table.checked || table.indeterminate ? [] : data.map((item) => item.id);
-    const checked = !table.checked && !table.indeterminate;
-    dispatch(toggleAll({ selectedRows, checked, indeterminate: false }));
-  };
-
-  return (
-    <input
-      type="checkbox"
-      className="absolute top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-blue-600 hover:cursor-pointer hover:ring-2 hover:ring-blue-300 hover:ring-offset-2 focus:ring-blue-500"
-      ref={checkbox}
-      checked={table.checked}
-      onChange={handleCheckboxChange}
-    />
-  );
-}
 
 type InputCheckboxProps = {
   checked: boolean | 'indeterminate';
@@ -188,17 +80,10 @@ export function DeleteTourButton({
   className,
   children,
 }: DeleteTourButtonProps) {
-  const table = useAppSelector((state) => state.table);
   const dispatch = useAppDispatch();
 
   function handleDeleteTour() {
     dispatch(removeTour(tourId));
-
-    dispatch(
-      updateSelectedRows({
-        selectedRows: table.selectedRows.filter((t) => t !== tourId),
-      })
-    );
   }
 
   return (
@@ -268,12 +153,13 @@ export function TableTopBarDeleteButton({
   className,
   children,
 }: TableTopBarDeleteButtonProps) {
-  const table = useAppSelector((state) => state.table);
+  const { rowSelection } = useAppSelector((state) => state.table);
   const dispatch = useAppDispatch();
+  const rowSelectionArray = Object.entries(rowSelection);
 
   const handleDeleteButtonClick = async () => {
-    dispatch(removeTour(table.selectedRows));
-    dispatch(updateSelectedRows({ selectedRows: [] }));
+    const rowIds = rowSelectionArray.map((value) => value[0]);
+    dispatch(removeTour(rowIds));
   };
 
   return (
@@ -283,7 +169,7 @@ export function TableTopBarDeleteButton({
         'inline-flex items-center rounded-full border border-red-500 px-2 py-1 text-xs text-red-500 disabled:border-red-200 disabled:text-red-200 sm:px-3',
         className
       )}
-      disabled={!table.selectedRows.length}
+      disabled={!rowSelectionArray.length}
     >
       <TrashIcon className="mr-1.5 h-4 w-4" />
       {children}
@@ -301,12 +187,14 @@ export function TableTopBarCopyButton({
   children,
 }: TableTopBarCopyButtonProps) {
   const [copied, setCopied] = useState(false);
-  const table = useAppSelector((state) => state.table);
-  const data = table.data;
+  const { rowSelection, data } = useAppSelector((state) => state.table);
+
+  const rowSelectionArray = Object.entries(rowSelection);
 
   async function handleCopyButtonClick() {
-    const dataToCopy = data.filter((item) =>
-      table.selectedRows.includes(item.id)
+    const dataToCopy = data.filter(
+      (item) => rowSelection[item.id]
+      // table.selectedRows.includes(item.id)
     );
     const text = toursArrayToText(dataToCopy);
 
@@ -324,7 +212,7 @@ export function TableTopBarCopyButton({
         'inline-flex items-center rounded-full border border-blue-500 px-2 py-1 text-xs text-blue-500 disabled:border-blue-200 disabled:text-blue-200 sm:px-3',
         className
       )}
-      disabled={!table.selectedRows.length}
+      disabled={!rowSelectionArray.length}
     >
       <>
         {copied ? (
@@ -335,35 +223,6 @@ export function TableTopBarCopyButton({
         {children}
       </>
     </button>
-  );
-}
-
-type SelectTourCheckboxProps = {
-  id: Tour['id'];
-};
-
-export function SelectTourCheckbox({ id }: SelectTourCheckboxProps) {
-  const table = useAppSelector((state) => state.table);
-  const dispatch = useAppDispatch();
-
-  return (
-    <>
-      {/* Selected row marker, only show when row is selected. */}
-      {table.selectedRows.includes(id) && (
-        <div className="absolute inset-y-0 left-0 w-0.5 bg-blue-600"></div>
-      )}
-      <input
-        type="checkbox"
-        className="-mt-2 h-4 w-4 rounded border-gray-300 text-blue-600 hover:cursor-pointer hover:ring-2 hover:ring-blue-300 hover:ring-offset-2 focus:ring-blue-500"
-        checked={table.selectedRows.includes(id)}
-        onChange={(e) => {
-          const selectedRows = e.target.checked
-            ? [...table.selectedRows, id]
-            : table.selectedRows.filter((t) => t !== id);
-          dispatch(updateSelectedRows({ selectedRows }));
-        }}
-      />
-    </>
   );
 }
 

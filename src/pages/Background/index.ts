@@ -6,9 +6,10 @@ import { RowSelectionState, SortingState } from '@tanstack/react-table';
 console.log('This is the background page');
 console.log('Put the background scripts here.');
 
-const getToursFromStorage = async () => {
+const getToursFromStorage = async (): Promise<Tour[]> => {
   const storage = await chrome.storage.local.get('tours');
   const tours: Tour[] | undefined = storage['tours'];
+  if (tours === undefined) return Array(0);
   return tours;
 };
 
@@ -27,11 +28,10 @@ const addToursToStorage = async (data: Tour[]): Promise<Tour[]> => {
   return data;
 };
 
-const getRowSelectionFromStorage = async (): Promise<
-  RowSelectionState | undefined
-> => {
+const getRowSelectionFromStorage = async (): Promise<RowSelectionState> => {
   const storage = await chrome.storage.local.get('rowSelection');
   const rowSelection: RowSelectionState | undefined = storage['rowSelection'];
+  if (rowSelection === undefined) return {};
   return rowSelection;
 };
 
@@ -183,20 +183,34 @@ chrome.runtime.onMessage.addListener(
         return true;
       }
 
-      case 'remove':
-        getToursFromStorage().then((tours) => {
-          if (tours) {
-            const filteredTours = tours.filter(
-              (tour) => !message.data.includes(tour.id)
+      case 'remove': {
+        Promise.all([getToursFromStorage(), getRowSelectionFromStorage()]).then(
+          (value) => {
+            const [data, rowSelection] = value;
+
+            const filteredData = data.filter(
+              (item) => !message.data.includes(item.id)
             );
-            updateToursStorage(filteredTours).then((updatedTours) => {
-              sendResponse(updatedTours);
+
+            const rowSelectionArray = Object.entries(rowSelection);
+            const filteredRowSelectionArray = rowSelectionArray.filter(
+              (row) => !message.data.includes(row[0])
+            );
+            const filteredRowSelection = Object.fromEntries(
+              filteredRowSelectionArray
+            );
+
+            Promise.all([
+              updateToursStorage(filteredData),
+              updateRowSelectionStorage(filteredRowSelection),
+            ]).then((value) => {
+              const [data, rowSelection] = value;
+              sendResponse({ data, rowSelection });
             });
-          } else {
-            throw Error('Something went wrong.');
           }
-        });
+        );
         return true;
+      }
       // default:
       //   throw Error('Unknown message type');
     }

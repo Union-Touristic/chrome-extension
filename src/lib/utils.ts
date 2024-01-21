@@ -6,7 +6,6 @@ import type {
 } from '@hello-pangea/dnd';
 import { twMerge } from 'tailwind-merge';
 import type { Tour } from '@/lib/db/schema';
-import type { ToursSortConfig } from '@/lib/definitions';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -148,23 +147,6 @@ export function tourToText(tour: Tour) {
 `;
 
   return text.trim();
-}
-
-export function createSortConfig(
-  sortConfig: ToursSortConfig | null,
-  configKey: ToursSortConfig['sortKey']
-): ToursSortConfig {
-  let direction: ToursSortConfig['direction'] = 'asc';
-
-  if (
-    sortConfig &&
-    sortConfig.sortKey === configKey &&
-    sortConfig.direction === 'asc'
-  ) {
-    direction = 'dsc';
-  }
-
-  return { sortKey: configKey, direction: direction };
 }
 
 export function reorder<ListItem>(
