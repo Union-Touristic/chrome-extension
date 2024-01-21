@@ -1,7 +1,7 @@
 import type { Tour } from '@/lib/db/schema';
 import type { RowSelectionMessenger, ToursMessenger } from '@/lib/definitions';
 import { reorder } from '@/lib/utils';
-import { RowSelectionState } from '@tanstack/react-table';
+import { RowSelectionState, SortingState } from '@tanstack/react-table';
 
 console.log('This is the background page');
 console.log('Put the background scripts here.');
@@ -39,6 +39,19 @@ const updateRowSelectionStorage = async (
   data: RowSelectionState
 ): Promise<RowSelectionState> => {
   await chrome.storage.local.set({ rowSelection: data });
+  return data;
+};
+
+const getSortingFromStorage = async (): Promise<SortingState | undefined> => {
+  const storage = await chrome.storage.local.get('sorting');
+  const sorting: SortingState | undefined = storage['sorting'];
+  return sorting;
+};
+
+const updateSortingStorage = async (
+  data: SortingState
+): Promise<SortingState> => {
+  await chrome.storage.local.set({ sorting: data });
   return data;
 };
 
@@ -139,7 +152,11 @@ chrome.runtime.onMessage.addListener(
               return 0;
             });
 
-            updateToursStorage(nextTours).then((updatedTours) => {
+            Promise.all([
+              updateToursStorage(nextTours),
+              updateSortingStorage(message.sorting),
+            ]).then((value) => {
+              const [updatedTours, updatedSorting] = value;
               sendResponse(updatedTours);
             });
           } else {
