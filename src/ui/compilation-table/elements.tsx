@@ -21,7 +21,6 @@ import {
 import type { Tour, TourInsert } from '@/lib/db/schema';
 import { TourWithIdAndPrice } from '@/lib/definitions';
 import { Loader2 } from 'lucide-react';
-import { useNotification } from '@/ui/use-notification';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
   removeTour,
@@ -29,6 +28,10 @@ import {
   resetTable,
 } from '@/redux/slices/tableSlice';
 import { Column } from '@tanstack/react-table';
+import {
+  setErrorNotification,
+  setNotification,
+} from '@/redux/slices/notificationSlice';
 
 type InputCheckboxProps = {
   checked: boolean | 'indeterminate';
@@ -321,7 +324,6 @@ export function SuccessNotificationMessage() {
 
 export function UpdateButton() {
   const [isLoading, setIsLoading] = React.useState(false);
-  const { notificationAction } = useNotification();
   const data = useAppSelector((state) => state.table.data);
   const dispatch = useAppDispatch();
 
@@ -352,63 +354,68 @@ export function UpdateButton() {
       setIsLoading(() => false);
 
       if (response.status === 201) {
-        notificationAction({
-          type: 'add',
-          title: 'Подборка успешно сохранена',
-          message: <SuccessNotificationMessage />,
-        });
+        dispatch(
+          setNotification({
+            title: 'Подборка успешно сохранена',
+            message: <SuccessNotificationMessage />,
+          })
+        );
 
         dispatch(resetTable());
       }
 
       if (response.status === 400) {
-        notificationAction({
-          type: 'add error notification',
-          title: 'Ошибка',
-          message:
-            'Неправильно отправленные данные, мы уже работаем над ее устранением. Попробуйте позднее',
-        });
+        dispatch(
+          setErrorNotification({
+            title: 'Ошибка',
+            message:
+              'Неправильно отправленные данные, мы уже работаем над ее устранением. Попробуйте позднее',
+          })
+        );
       }
 
       if (response.status === 401) {
-        notificationAction({
-          type: 'add error notification',
-          title: 'Ошибка аутентификации',
-          message: (
-            <>
-              Вы не вошли в CRM.
-              <a
-                className="underline"
-                href="https://uniontouristic.vercel.app/login"
-                onClick={async (e) => {
-                  e.preventDefault();
-                  await chrome.tabs.create({
-                    url: e.currentTarget.href,
-                  });
-                }}
-              >
-                Войти
-              </a>
-            </>
-          ),
-        });
+        dispatch(
+          setErrorNotification({
+            title: 'Ошибка аутентификации',
+            message: (
+              <>
+                Вы не вошли в CRM.
+                <a
+                  className="underline"
+                  href="https://uniontouristic.vercel.app/login"
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    await chrome.tabs.create({
+                      url: e.currentTarget.href,
+                    });
+                  }}
+                >
+                  Войти
+                </a>
+              </>
+            ),
+          })
+        );
       }
 
       if (response.status === 500) {
-        notificationAction({
-          type: 'add error notification',
-          title: 'Ошибка',
-          message:
-            'Произошла ошибка на нашей стороне. Мы уже работаем над ее устранением',
-        });
+        dispatch(
+          setErrorNotification({
+            title: 'Ошибка',
+            message:
+              'Произошла ошибка на нашей стороне. Мы уже работаем над ее устранением',
+          })
+        );
       }
     } catch (error) {
       if (error instanceof Error) {
-        notificationAction({
-          type: 'add error notification',
-          title: 'Ошибка',
-          message: JSON.stringify(error),
-        });
+        dispatch(
+          setErrorNotification({
+            title: 'Ошибка',
+            message: JSON.stringify(error),
+          })
+        );
       }
     }
   }
