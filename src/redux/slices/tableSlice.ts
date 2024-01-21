@@ -1,15 +1,19 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type {
-  TourPrice,
-  TableMessenger,
+  TourWithIdAndPrice,
   ReorderStartEndIndexes,
 } from '@/lib/definitions';
 import { Tour } from '@/lib/db/schema';
 import { SortingState, RowSelectionState } from '@tanstack/react-table';
-
-export function chromeToursMessenger(t: TableMessenger) {
-  return chrome.runtime.sendMessage<TableMessenger, Tour[]>(t);
-}
+import {
+  getDataFromStorage,
+  getRowSelectionFromStorage,
+  getSortingFromStorage,
+  updateDataStorage,
+  updateRowSelectionStorage,
+  updateSortingStorage,
+} from '@/api/chrome';
+import { reorder, sort } from '@/lib/utils';
 
 export interface TableState {
   data: Tour[];
@@ -27,11 +31,11 @@ export const fetchInitialState = createAsyncThunk(
   'table/fetchInitialState',
   async (_, thunkApi) => {
     try {
-      const { data, sorting, rowSelection } = await chrome.runtime.sendMessage<
-        TableMessenger,
-        TableState
-      >({ type: 'init' });
-
+      const [data, sorting, rowSelection] = await Promise.all([
+        getDataFromStorage(),
+        getSortingFromStorage(),
+        getRowSelectionFromStorage(),
+      ]);
       return { data, sorting, rowSelection };
     } catch (error) {
       return thunkApi.rejectWithValue(error);
@@ -39,32 +43,35 @@ export const fetchInitialState = createAsyncThunk(
   }
 );
 
-export const updateTours = createAsyncThunk(
-  'tours/updateTours',
-  async (data: Tour[], thunkApi) => {
+export const resetTable = createAsyncThunk(
+  'table/resetTable',
+  async (_, thunkApi) => {
     try {
-      const updatedTours = await chromeToursMessenger({
-        type: 'update',
-        data: data,
-      });
-      return updatedTours;
+      const [data, sorting, rowSelection] = await Promise.all([
+        updateDataStorage(Array(0)),
+        updateSortingStorage(Array(0)),
+        updateRowSelectionStorage({}),
+      ]);
+      return { data, sorting, rowSelection };
     } catch (error) {
       return thunkApi.rejectWithValue(error);
     }
   }
 );
 
-export const updateTourPrice = createAsyncThunk(
-  'tours/updateTourPrice',
-  async (newTourPrice: TourPrice, thunkApi) => {
+export const setTourPrice = createAsyncThunk(
+  'table/setTourPrice',
+  async (value: TourWithIdAndPrice, thunkApi) => {
     try {
-      const { data, sorting } = await chrome.runtime.sendMessage<
-        TableMessenger,
-        { data: Tour[]; sorting: SortingState }
-      >({
-        type: 'update tour price',
-        data: newTourPrice,
+      const fetchedData = await getDataFromStorage();
+      const nextData = fetchedData.map((item) => {
+        if (item.id === value.id) return { ...item, price: value.price };
+        return item;
       });
+      const [data, sorting] = await Promise.all([
+        updateDataStorage(nextData),
+        updateSortingStorage(Array(0)),
+      ]);
       return { data, sorting };
     } catch (error) {
       return thunkApi.rejectWithValue(error);
@@ -72,15 +79,19 @@ export const updateTourPrice = createAsyncThunk(
   }
 );
 
-export const sortTours = createAsyncThunk(
-  'tours/sortTours',
-  async (sorting: SortingState, thunkApi) => {
+export const setSorting = createAsyncThunk(
+  'table/setSorting',
+  async (sortingConfig: SortingState, thunkApi) => {
     try {
-      const updatedTours = await chromeToursMessenger({
-        type: 'sort tours',
-        sorting,
-      });
-      return { updatedTours, sorting };
+      const fetchedData = await getDataFromStorage();
+      const nextData = sort(fetchedData, sortingConfig);
+
+      const [data, sorting] = await Promise.all([
+        updateDataStorage(nextData),
+        updateSortingStorage(sortingConfig),
+      ]);
+
+      return { data, sorting };
     } catch (error) {
       return thunkApi.rejectWithValue(error);
     }
@@ -91,31 +102,23 @@ export const setRowSelection = createAsyncThunk(
   'table/setRowSelection',
   async (rowSelection: RowSelectionState, thunkApi) => {
     try {
-      const tableState = await chrome.runtime.sendMessage<
-        TableMessenger,
-        TableState
-      >({
-        type: 'setRowSelection',
-        rowSelection,
-      });
-      return tableState.rowSelection;
+      return { rowSelection: await updateRowSelectionStorage(rowSelection) };
     } catch (error) {
       return thunkApi.rejectWithValue(error);
     }
   }
 );
 
-export const updateToursOrder = createAsyncThunk(
-  'tours/updateToursOrder',
-  async (indexes: ReorderStartEndIndexes, thunkApi) => {
+export const setDataOrder = createAsyncThunk(
+  'table/setDataOrder',
+  async ({ startIndex, endIndex }: ReorderStartEndIndexes, thunkApi) => {
     try {
-      const { data, sorting } = await chrome.runtime.sendMessage<
-        TableMessenger,
-        { data: Tour[]; sorting: SortingState }
-      >({
-        type: 'update tours order',
-        data: indexes,
-      });
+      const fetchedData = await getDataFromStorage();
+      const nextData = reorder(fetchedData, startIndex, endIndex);
+      const [data, sorting] = await Promise.all([
+        updateDataStorage(nextData),
+        updateSortingStorage(Array(0)),
+      ]);
       return { data, sorting };
     } catch (error) {
       return thunkApi.rejectWithValue(error);
@@ -124,16 +127,27 @@ export const updateToursOrder = createAsyncThunk(
 );
 
 export const removeTour = createAsyncThunk(
-  'tours/removeTour',
+  'table/removeTour',
   async (idForRemove: Tour['id'] | Tour['id'][], thunkApi) => {
     try {
-      const { data, rowSelection } = await chrome.runtime.sendMessage<
-        TableMessenger,
-        { data: Tour[]; rowSelection: RowSelectionState }
-      >({
-        type: 'remove',
-        data: idForRemove,
-      });
+      const [fetchedData, fetchedRowSelection] = await Promise.all([
+        getDataFromStorage(),
+        getRowSelectionFromStorage(),
+      ]);
+
+      const filteredData = fetchedData.filter(
+        (item) => !idForRemove.includes(item.id)
+      );
+
+      const filteredRowSelection = Object.fromEntries(
+        Object.entries(fetchedRowSelection).filter(
+          (row) => !idForRemove.includes(row[0])
+        )
+      );
+      const [data, rowSelection] = await Promise.all([
+        updateDataStorage(filteredData),
+        updateRowSelectionStorage(filteredRowSelection),
+      ]);
       return { data, rowSelection };
     } catch (error) {
       return thunkApi.rejectWithValue(error);
@@ -146,66 +160,23 @@ const tableSlice = createSlice({
   initialState: initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder
-      .addCase(fetchInitialState.pending, (state) => state)
-      .addCase(fetchInitialState.fulfilled, (state, action) => ({
-        ...state,
-        data: action.payload.data,
-        sorting: action.payload.sorting,
-        rowSelection: action.payload.rowSelection,
-      }))
-      .addCase(fetchInitialState.rejected, (state) => state);
-
-    builder
-      .addCase(updateTours.pending, (state) => state)
-      .addCase(updateTours.fulfilled, (state, action) => ({
-        ...state,
-        data: action.payload,
-      }))
-      .addCase(updateTours.rejected, (state) => state);
-
-    builder
-      .addCase(removeTour.pending, (state) => state)
-      .addCase(removeTour.fulfilled, (state, action) => ({
-        ...state,
-        data: action.payload.data,
-        rowSelection: action.payload.rowSelection,
-      }))
-      .addCase(removeTour.rejected, (state) => state);
-
-    builder
-      .addCase(updateTourPrice.pending, (state) => state)
-      .addCase(updateTourPrice.fulfilled, (state, action) => ({
-        ...state,
-        data: action.payload.data,
-        sorting: action.payload.sorting,
-      }))
-      .addCase(updateTourPrice.rejected, (state) => state);
-
-    builder
-      .addCase(updateToursOrder.pending, (state) => state)
-      .addCase(updateToursOrder.fulfilled, (state, action) => ({
-        ...state,
-        data: action.payload.data,
-        sorting: action.payload.sorting,
-      }))
-      .addCase(updateToursOrder.rejected, (state) => state);
-
-    builder
-      .addCase(sortTours.pending, (state) => state)
-      .addCase(sortTours.fulfilled, (state, action) => {
-        const { sorting, updatedTours } = action.payload;
-        return { ...state, sorting, data: updatedTours };
-      })
-      .addCase(sortTours.rejected, (state) => state);
-
-    builder
-      .addCase(setRowSelection.pending, (state) => state)
-      .addCase(setRowSelection.fulfilled, (state, action) => ({
-        ...state,
-        rowSelection: action.payload,
-      }))
-      .addCase(setRowSelection.rejected, (state) => state);
+    [
+      fetchInitialState,
+      resetTable,
+      setTourPrice,
+      setSorting,
+      setRowSelection,
+      setDataOrder,
+      removeTour,
+    ].forEach((item) => {
+      builder
+        .addCase(item.pending, (state) => state)
+        .addCase(item.fulfilled, (state, action) => ({
+          ...state,
+          ...action.payload,
+        }))
+        .addCase(item.rejected, (state) => state);
+    });
   },
 });
 

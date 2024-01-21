@@ -7,8 +7,8 @@ import { fetchCookies } from '@/redux/slices/authSlice';
 import {
   fetchInitialState,
   setRowSelection,
-  sortTours,
-  updateToursOrder,
+  setSorting,
+  setDataOrder,
 } from '@/redux/slices/tableSlice';
 import { columns } from '@/ui/compilation-table/columns';
 
@@ -28,9 +28,9 @@ export function ExtensionApp() {
     <DataTable
       data={data}
       columns={columns}
-      onDragEnd={(value) => dispatch(updateToursOrder(value))}
+      onDragEnd={(value) => dispatch(setDataOrder(value))}
       sorting={sorting}
-      onSortingChange={(newVal) => dispatch(sortTours(newVal))}
+      onSortingChange={(newVal) => dispatch(setSorting(newVal))}
       rowSelection={rowSelection}
       onRowSelectionChange={(newVal) => dispatch(setRowSelection(newVal))}
       getRowId={(originalRow) => originalRow.id}

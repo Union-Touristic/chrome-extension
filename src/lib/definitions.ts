@@ -1,9 +1,6 @@
 import { Tour } from '@/lib/db/schema';
-import { RowSelectionState, SortingState } from '@tanstack/react-table';
 
-export type CompilationStatus = 'Active' | 'Archived';
-
-export type TourPrice = {
+export type TourWithIdAndPrice = {
   id: Tour['id'];
   price: NonNullable<Tour['price']>;
 };
@@ -13,26 +10,4 @@ export type ReorderStartEndIndexes = {
   endIndex: number;
 };
 
-export type Occupancy = {
-  adultsCount: number;
-  childrenCount: number;
-  childAges: number[];
-};
-
-export type Breadcrumb = {
-  label: string | React.ReactNode;
-  href: string;
-  active?: boolean;
-};
-
-// Definitions for chrome runtime
-export type TableMessenger =
-  | { type: 'retrieve' }
-  | { type: 'init' }
-  | { type: 'add'; data: Tour[] }
-  | { type: 'update'; data: Tour[] }
-  | { type: 'remove'; data: Tour['id'] | Tour['id'][] }
-  | { type: 'update tour price'; data: TourPrice }
-  | { type: 'update tours order'; data: ReorderStartEndIndexes }
-  | { type: 'sort tours'; sorting: SortingState }
-  | { type: 'setRowSelection'; rowSelection: RowSelectionState };
+export type TableMessenger = { type: 'add'; data: Tour[] };

@@ -5,6 +5,7 @@ import {
   createAddButton,
   createTTdElement,
 } from './helpers';
+import { getDataFromStorage } from '@/api/chrome';
 
 console.log('TOURVISOR content script works!');
 console.log('Must reload extension for modifications to take effect.');
@@ -153,20 +154,18 @@ function handleTTBodyElementMutation(
         });
     }
 
-    // if this tour already in chrome storage
+    // if this tour is already in chrome storage
     // then make button with '--added' css class and make it disabled
     // do not add event listeneres
-    chrome.runtime
-      .sendMessage<TableMessenger, Tour[]>({ type: 'retrieve' })
-      .then((toursInStorage) => {
-        toursInStorage.forEach((tour) => {
-          if (tour.id === tourOptions.id) {
-            button.classList.add('tour-collector-button--added');
-            button.disabled = true;
-            button.removeEventListener('click', handleButtonClick);
-          }
-        });
+    getDataFromStorage().then((toursInStorage) => {
+      toursInStorage.forEach((tour) => {
+        if (tour.id === tourOptions.id) {
+          button.classList.add('tour-collector-button--added');
+          button.disabled = true;
+          button.removeEventListener('click', handleButtonClick);
+        }
       });
+    });
 
     button.addEventListener('click', handleButtonClick);
 

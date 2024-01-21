@@ -19,14 +19,14 @@ import {
 } from '@heroicons/react/24/outline';
 
 import type { Tour, TourInsert } from '@/lib/db/schema';
-import { TourPrice, TableMessenger } from '@/lib/definitions';
+import { TourWithIdAndPrice } from '@/lib/definitions';
 import { Loader2 } from 'lucide-react';
 import { useNotification } from '@/ui/use-notification';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
   removeTour,
-  updateTourPrice,
-  updateTours,
+  setTourPrice,
+  resetTable,
 } from '@/redux/slices/tableSlice';
 import { Column } from '@tanstack/react-table';
 
@@ -225,7 +225,7 @@ export function TableTopBarCopyButton({
   );
 }
 
-type TourEditPriceProps = TourPrice;
+type TourEditPriceProps = TourWithIdAndPrice;
 
 export function TourEditPrice({ id, price }: TourEditPriceProps) {
   const [value, setValue] = React.useState(frenchFormatter.format(price));
@@ -258,7 +258,7 @@ export function TourEditPrice({ id, price }: TourEditPriceProps) {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const updatedPrice = Number(inputRef.current?.value.replace(/\s/g, ''));
-    dispatch(updateTourPrice({ id, price: updatedPrice }));
+    dispatch(setTourPrice({ id, price: updatedPrice }));
     inputRef.current?.blur();
   };
 
@@ -358,12 +358,7 @@ export function UpdateButton() {
           message: <SuccessNotificationMessage />,
         });
 
-        await chrome.runtime.sendMessage<TableMessenger, Tour[]>({
-          type: 'update',
-          data: [],
-        });
-        // TODO: remove tours, clear all state
-        dispatch(updateTours([]));
+        dispatch(resetTable());
       }
 
       if (response.status === 400) {
