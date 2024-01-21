@@ -11,8 +11,6 @@ import {
   updateToursOrder,
 } from '@/redux/slices/tableSlice';
 import { columns } from '@/ui/compilation-table/columns';
-import { ReorderStartEndIndexes } from '@/lib/definitions';
-import { SortingState, Updater, functionalUpdate } from '@tanstack/react-table';
 
 export function ExtensionApp() {
   const isLoggedIn = useAppSelector((state) => state.auth.isLoggedIn);
@@ -26,22 +24,13 @@ export function ExtensionApp() {
     Promise.all([dispatch(fetchCookies()), dispatch(fetchTours())]);
   }, [dispatch]);
 
-  function handleDragEnd({ startIndex, endIndex }: ReorderStartEndIndexes) {
-    dispatch(updateToursOrder({ startIndex, endIndex }));
-  }
-
-  function onSortingChange(updater: Updater<SortingState>) {
-    const updatedSorting = functionalUpdate(updater, sorting);
-    dispatch(sortTours(updatedSorting));
-  }
-
   const tableOrEmptyMessage = data.length ? (
     <DataTable
       data={data}
       columns={columns}
-      onDragEnd={handleDragEnd}
+      onDragEnd={(value) => dispatch(updateToursOrder(value))}
       sorting={sorting}
-      onSortingChange={onSortingChange}
+      onSortingChange={(newVal) => dispatch(sortTours(newVal))}
       rowSelection={rowSelection}
       onRowSelectionChange={(newVal) => dispatch(selectTours(newVal))}
       getRowId={(originalRow) => originalRow.id}

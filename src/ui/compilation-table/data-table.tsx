@@ -1,7 +1,5 @@
-import * as React from 'react';
 import {
   ColumnDef,
-  OnChangeFn,
   RowSelectionState,
   SortingState,
   flexRender,
@@ -34,7 +32,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   onDragEnd?: ({ startIndex, endIndex }: ReorderStartEndIndexes) => void;
   sorting: SortingState;
-  onSortingChange: OnChangeFn<SortingState>;
+  onSortingChange: (updatedValue: SortingState) => void;
   getRowId: (originalRow: TData, index: number) => string;
   rowSelection: RowSelectionState;
   onRowSelectionChange: (updatedValue: RowSelectionState) => void;
@@ -54,7 +52,10 @@ export function DataTable<TData, TValue>({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    onSortingChange: onSortingChange,
+    onSortingChange: (updaterOrValue) => {
+      const updatedValue = functionalUpdate(updaterOrValue, sorting);
+      onSortingChange(updatedValue);
+    },
     getSortedRowModel: getSortedRowModel(),
     onRowSelectionChange: (updaterOrValue) => {
       const updatedValue = functionalUpdate(updaterOrValue, rowSelection);
@@ -127,8 +128,7 @@ export function DataTable<TData, TValue>({
                         className={cn(
                           'border-t-0 border-gray-200 bg-white text-xs leading-4 focus:relative focus:z-20 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-0',
                           {
-                            // TODO: add style when row is selected
-                            // 'bg-gray-100': table.selectedRows.includes(tour.id),
+                            'bg-gray-100': row.getIsSelected(),
                             'is-dragging group bg-gray-400 shadow-lg outline-none ring-2 ring-blue-700 ring-offset-0':
                               snapshot.isDragging || snapshot.isDropAnimating,
                           },
