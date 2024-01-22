@@ -18,6 +18,12 @@ type Props<TData> = {
 
 export default function DropdownColumns<TData>({ table }: Props<TData>) {
   const actionsColumn = table.getColumn('actions');
+  const occupancyColumn = table.getColumn('occupancy');
+
+  const columns = [
+    { name: 'Действия', column: actionsColumn },
+    { name: 'Туристы', column: occupancyColumn },
+  ];
 
   return (
     <DropdownMenu>
@@ -29,16 +35,21 @@ export default function DropdownColumns<TData>({ table }: Props<TData>) {
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Показывать колонки</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {actionsColumn && (
-          <DropdownMenuCheckboxItem
-            key={actionsColumn.id}
-            className="capitalize"
-            checked={actionsColumn.getIsVisible()}
-            onCheckedChange={(value) => actionsColumn.toggleVisibility(!!value)}
-          >
-            Действия
-          </DropdownMenuCheckboxItem>
-        )}
+        {columns.map((item) => {
+          if (!item.column) return null;
+          return (
+            <DropdownMenuCheckboxItem
+              key={item.column.id}
+              className="capitalize"
+              checked={item.column.getIsVisible()}
+              onCheckedChange={(value) =>
+                item.column?.toggleVisibility(!!value)
+              }
+            >
+              {item.name}
+            </DropdownMenuCheckboxItem>
+          );
+        })}
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -332,11 +332,13 @@ export function UpdateButton() {
       setIsLoading(true);
 
       // Format tour before send
-      const toursToInsert: TourInsert[] = data.map(({ id, ...rest }) => {
-        return {
-          ...rest,
-        };
-      });
+      const toursToInsert: TourInsert[] = data.map(
+        ({ id, occupancy, ...rest }) => {
+          return {
+            ...rest,
+          };
+        }
+      );
 
       const response = await fetch(
         'https://uniontouristic.vercel.app/api/compilations',

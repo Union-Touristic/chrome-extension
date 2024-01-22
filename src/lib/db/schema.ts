@@ -19,6 +19,7 @@ export const tours = pgTable('tours', {
   operator: varchar('operator', { length: 30 }),
   currency: varchar('currency', { length: 10 }),
   price: integer('price'),
+  occupancy: varchar('occupancy', { length: 30 }),
 });
 
 export const insertTourSchema = createInsertSchema(tours);

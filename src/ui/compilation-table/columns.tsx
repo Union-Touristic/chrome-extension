@@ -107,6 +107,10 @@ export const columns: ColumnDef<Tour>[] = [
     },
   },
   {
+    accessorKey: 'occupancy',
+    header: 'Туристы',
+  },
+  {
     accessorKey: 'actions',
     header: 'Действия',
     cell: ({ row }) => {

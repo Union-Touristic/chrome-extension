@@ -80,6 +80,7 @@ export function toursArrayToText(tours: Array<Tour>) {
       'ночей'
     )}
 🛋️ Номер: ${tour.roomType}
+👨‍👩‍👧 Туристы: ${tour.occupancy}
 🥣 Питание: ${tour.boardBasis}
 🔥 Цена: ${frenchFormatter.format(tour.price!)} ${tour.currency} за тур
 
@@ -110,6 +111,7 @@ export function tourToText(tour: Tour) {
     'ночей'
   )}
 🛋️ Номер: ${tour.roomType}
+👨‍👩‍👧 Туристы: ${tour.occupancy}
 🥣 Питание: ${tour.boardBasis}
 🔥 Цена: ${frenchFormatter.format(tour.price!)} ${tour.currency} за тур
 `;

@@ -189,6 +189,17 @@ function getRegion(hotelResultItemInfoElement: Element) {
     '.TVResultItemSubTitle'
   );
 
+  const TVHotelInfoSubTitleWrapperElement =
+    TVResultItemSubTitleElement?.querySelector('.TVHotelInfoSubTitleWrapper');
+
+  // If has wrapper element then parse differently
+  if (TVHotelInfoSubTitleWrapperElement) {
+    const TVHotelInfoSubTitleElement =
+      TVHotelInfoSubTitleWrapperElement.querySelector('.TVHotelInfoSubTitle');
+    const textContent = TVHotelInfoSubTitleElement?.textContent;
+    return textContent && textContent.split(',')[0];
+  }
+
   let result: string;
   let textContent: string | null | undefined;
 
@@ -197,7 +208,7 @@ function getRegion(hotelResultItemInfoElement: Element) {
   }
 
   if (textContent) {
-    result = textContent.split(',')[0]?.split('-')[0];
+    result = textContent.split(',')[0];
     return result;
   }
 }
@@ -337,36 +348,17 @@ function getCity() {
   }
 }
 
-// function getOccupancy(): Tour['occupancy'] {
-//   const occupancy =
-//     document.querySelector('.TVTourists') ||
-//     document.querySelector('.TVTouristsSelect .TVMainSelectContent');
-//   let match: RegExpMatchArray | null = null;
+function getOccupancy(tourResultItemElement: Element) {
+  const TVTourResultItemTouristsElement = tourResultItemElement.querySelector(
+    '.TVTourResultItemTourists'
+  );
 
-//   if (occupancy) {
-//     const textContent = occupancy.textContent;
+  if (TVTourResultItemTouristsElement) {
+    const textContent = TVTourResultItemTouristsElement.textContent;
 
-//     if (textContent) {
-//       match = textContent.match(/(\d+).*?(\d+)?/g);
-//     }
-//   }
-
-//   if (match) {
-//     const childAges: number[] = []; // TODO: implement childAges data structure
-
-//     return {
-//       adultsCount: Number(match[0]),
-//       childrenCount: Number(match[1]) || 0,
-//       childAges: childAges,
-//     };
-//   }
-
-//   return {
-//     adultsCount: 0,
-//     childrenCount: 0,
-//     childAges: [],
-//   };
-// }
+    return textContent && textContent;
+  }
+}
 
 export const collectTourOptions = (
   hotelResultItemInfoElement: Element,
@@ -388,7 +380,7 @@ export const collectTourOptions = (
     price: getPrice(tourResultItemElement) || 0,
     currency: getCurrency(tourResultItemElement) || 'NotFound',
     fromCity: getCity() || 'NotFound',
-    // occupancy: getOccupancy(),
+    occupancy: getOccupancy(tourResultItemElement) || 'NotFound',
   };
 
   const id = generateTourId(tourWithoutId);
