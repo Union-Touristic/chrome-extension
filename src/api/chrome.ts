@@ -1,5 +1,9 @@
 import { Tour } from '@/lib/db/schema';
-import { RowSelectionState, SortingState } from '@tanstack/react-table';
+import {
+  RowSelectionState,
+  SortingState,
+  VisibilityState,
+} from '@tanstack/react-table';
 
 export const getDataFromStorage = async (): Promise<Tour[]> => {
   const storage = await chrome.storage.local.get('tours');
@@ -48,3 +52,18 @@ export const updateSortingStorage = async (
   await chrome.storage.local.set({ sorting });
   return sorting;
 };
+
+export async function getColumnVisibilityFromStorage(): Promise<VisibilityState> {
+  const storage = await chrome.storage.local.get('columnVisibility');
+  const columnVisibility: VisibilityState | undefined =
+    storage['columnVisibility'];
+  if (columnVisibility === undefined) return {};
+  return columnVisibility;
+}
+
+export async function updateColumnVisibilityStorage(
+  columnVisibility: VisibilityState
+): Promise<VisibilityState> {
+  await chrome.storage.local.set({ columnVisibility });
+  return columnVisibility;
+}

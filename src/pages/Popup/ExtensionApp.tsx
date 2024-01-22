@@ -9,12 +9,13 @@ import {
   setRowSelection,
   setSorting,
   setDataOrder,
+  setColumnVisibility,
 } from '@/redux/slices/tableSlice';
 import { columns } from '@/ui/compilation-table/columns';
 
 export function ExtensionApp() {
   const isLoggedIn = useAppSelector((state) => state.auth.isLoggedIn);
-  const { data, sorting, rowSelection } = useAppSelector(
+  const { data, sorting, rowSelection, columnVisibility } = useAppSelector(
     (state) => state.table
   );
 
@@ -34,6 +35,10 @@ export function ExtensionApp() {
       rowSelection={rowSelection}
       onRowSelectionChange={(newVal) => dispatch(setRowSelection(newVal))}
       getRowId={(originalRow) => originalRow.id}
+      columnVisibility={columnVisibility}
+      onColumnVisibilityChange={(newVal) =>
+        dispatch(setColumnVisibility(newVal))
+      }
     />
   ) : (
     <EmptyListMessage />

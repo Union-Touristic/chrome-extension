@@ -2,6 +2,7 @@ import {
   ColumnDef,
   RowSelectionState,
   SortingState,
+  VisibilityState,
   flexRender,
   functionalUpdate,
   getCoreRowModel,
@@ -26,6 +27,7 @@ import {
   ResponderProvided,
 } from '@hello-pangea/dnd';
 import { ReorderStartEndIndexes } from '@/lib/definitions';
+import DropdownColumns from './dropdown-columns';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -36,6 +38,8 @@ interface DataTableProps<TData, TValue> {
   getRowId: (originalRow: TData, index: number) => string;
   rowSelection: RowSelectionState;
   onRowSelectionChange: (updatedValue: RowSelectionState) => void;
+  columnVisibility: VisibilityState;
+  onColumnVisibilityChange: (updatedValue: VisibilityState) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -47,6 +51,8 @@ export function DataTable<TData, TValue>({
   getRowId,
   rowSelection,
   onRowSelectionChange,
+  columnVisibility,
+  onColumnVisibilityChange,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -61,9 +67,14 @@ export function DataTable<TData, TValue>({
       const updatedValue = functionalUpdate(updaterOrValue, rowSelection);
       onRowSelectionChange(updatedValue);
     },
+    onColumnVisibilityChange: (updaterOrValue) => {
+      const updatedValue = functionalUpdate(updaterOrValue, columnVisibility);
+      onColumnVisibilityChange(updatedValue);
+    },
     state: {
       sorting,
       rowSelection,
+      columnVisibility,
     },
     manualSorting: true,
     getRowId: getRowId,
@@ -89,7 +100,9 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <TableTopBar />
+      <TableTopBar>
+        <DropdownColumns table={table} />
+      </TableTopBar>
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (

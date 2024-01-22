@@ -492,7 +492,10 @@ export function ColumnSortHeader<TData, TValue>({
 
   return (
     <button
-      className="flex rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      className={cn(
+        'flex rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+        className
+      )}
       type="button"
       onClick={() => {
         column.toggleSorting(direction === 'asc');

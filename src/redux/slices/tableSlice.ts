@@ -4,11 +4,17 @@ import type {
   ReorderStartEndIndexes,
 } from '@/lib/definitions';
 import { Tour } from '@/lib/db/schema';
-import { SortingState, RowSelectionState } from '@tanstack/react-table';
 import {
+  SortingState,
+  RowSelectionState,
+  VisibilityState,
+} from '@tanstack/react-table';
+import {
+  getColumnVisibilityFromStorage,
   getDataFromStorage,
   getRowSelectionFromStorage,
   getSortingFromStorage,
+  updateColumnVisibilityStorage,
   updateDataStorage,
   updateRowSelectionStorage,
   updateSortingStorage,
@@ -19,24 +25,29 @@ export interface TableState {
   data: Tour[];
   sorting: SortingState;
   rowSelection: RowSelectionState;
+  columnVisibility: VisibilityState;
 }
 
 const initialState: TableState = {
   data: [],
   sorting: [],
   rowSelection: {},
+  columnVisibility: {},
 };
 
 export const fetchInitialState = createAsyncThunk(
   'table/fetchInitialState',
   async (_, thunkApi) => {
     try {
-      const [data, sorting, rowSelection] = await Promise.all([
-        getDataFromStorage(),
-        getSortingFromStorage(),
-        getRowSelectionFromStorage(),
-      ]);
-      return { data, sorting, rowSelection };
+      const [data, sorting, rowSelection, columnVisibility] = await Promise.all(
+        [
+          getDataFromStorage(),
+          getSortingFromStorage(),
+          getRowSelectionFromStorage(),
+          getColumnVisibilityFromStorage(),
+        ]
+      );
+      return { data, sorting, rowSelection, columnVisibility };
     } catch (error) {
       return thunkApi.rejectWithValue(error);
     }
@@ -155,6 +166,20 @@ export const removeTour = createAsyncThunk(
   }
 );
 
+export const setColumnVisibility = createAsyncThunk(
+  'table/setColumnVisibility',
+  async (receivedColumnVisibility: VisibilityState, thunkApi) => {
+    try {
+      const columnVisibility = await updateColumnVisibilityStorage(
+        receivedColumnVisibility
+      );
+      return { columnVisibility };
+    } catch (error) {
+      return thunkApi.rejectWithValue(error);
+    }
+  }
+);
+
 const tableSlice = createSlice({
   name: 'table',
   initialState: initialState,
@@ -168,6 +193,7 @@ const tableSlice = createSlice({
       setRowSelection,
       setDataOrder,
       removeTour,
+      setColumnVisibility,
     ].forEach((item) => {
       builder
         .addCase(item.pending, (state) => state)

@@ -88,7 +88,13 @@ export const columns: ColumnDef<Tour>[] = [
   },
   {
     accessorKey: 'price',
-    header: ({ column }) => <ColumnSortHeader column={column} title="Цена" />,
+    header: ({ column }) => (
+      <ColumnSortHeader
+        className="w-full justify-end"
+        column={column}
+        title="Цена"
+      />
+    ),
     cell: ({ row }) => {
       const { id, price, currency } = row.original;
 
