@@ -26,6 +26,7 @@ import { Column } from '@tanstack/react-table';
 import {
   setErrorNotification,
   setNotification,
+  setSuccessNotification,
 } from '@/redux/slices/notificationSlice';
 import {
   useClearTableMutation,
@@ -33,6 +34,7 @@ import {
   useRemoveItemDataMutation,
   useUpdateItemMutation,
 } from '@/redux/services/table';
+import { CheckIcon, ResetIcon } from '@radix-ui/react-icons';
 
 type InputCheckboxProps = {
   checked: boolean | 'indeterminate';
@@ -239,7 +241,15 @@ export function TourEditPrice({ id, price }: TourEditPriceProps) {
   const [updatePrice] = useUpdateItemMutation();
   const [value, setValue] = React.useState(frenchFormatter.format(price));
   const initialPriceRef = React.useRef(price);
-  const inputRef = React.useRef<HTMLInputElement | null>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const [isControlsShowing, setIsControlsShowing] = React.useState(false);
+  const dispatch = useAppDispatch();
+
+  function resetToInitialValue() {
+    setValue(frenchFormatter.format(initialPriceRef.current));
+    inputRef.current?.blur();
+    setIsControlsShowing(false);
+  }
 
   const handlePriceInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const re = /^[\d\s]+$/;
@@ -247,39 +257,75 @@ export function TourEditPrice({ id, price }: TourEditPriceProps) {
       const priceToNumber = Number(e.target.value.replace(/\s/g, ''));
       setValue(frenchFormatter.format(priceToNumber));
     }
+    setIsControlsShowing(true);
   };
 
   const handleInputKeydown = (e: React.KeyboardEvent) => {
     if (e.code === 'Escape') {
       e.preventDefault();
-      // TODO: fix types
-      setValue(frenchFormatter.format(initialPriceRef.current!));
-      inputRef.current?.blur();
+      resetToInitialValue();
     }
 
     if (e.code === 'Tab') {
-      // TODO: fix types
-      setValue(frenchFormatter.format(initialPriceRef.current!));
+      resetToInitialValue();
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  function handleReset(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+    e.preventDefault();
+    resetToInitialValue();
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const updatedPrice = Number(inputRef.current?.value.replace(/\s/g, ''));
-    updatePrice({ id, price: updatedPrice });
-    inputRef.current?.blur();
+    try {
+      await updatePrice({ id, price: updatedPrice });
+      inputRef.current?.blur();
+      initialPriceRef.current = updatedPrice;
+      setIsControlsShowing(false);
+      dispatch(
+        setSuccessNotification({
+          title: 'OK',
+          message: 'Цена тура в подборке успшено обновлена',
+        })
+      );
+    } catch (error) {
+      dispatch(
+        setErrorNotification({
+          title: 'Ошибка',
+          message: 'Попробуйте закрыть и открыть расширение заново',
+        })
+      );
+    }
   };
 
   return (
     <form className="cursor-pointer" onSubmit={handleSubmit}>
-      <input
-        ref={inputRef}
-        type="text"
-        value={value}
-        onChange={handlePriceInputChange}
-        className="focus:ring-blue-500 w-16 border-0 bg-transparent p-0 text-right text-xs focus:rounded-sm focus:ring-2 focus:ring-offset-2 group-[.is-dragging]:text-white"
-        onKeyDown={handleInputKeydown}
-      />
+      <div className="relative">
+        {isControlsShowing ? (
+          <div className="absolute -bottom-5 left-1 space-x-2 flex w-full">
+            <button
+              type="reset"
+              className="bg-blue-400 rounded-full"
+              onClick={handleReset}
+            >
+              <ResetIcon className="w-3.5 h-3.5" />
+            </button>
+            <button type="submit" className="bg-green-400 rounded-full">
+              <CheckIcon className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        ) : null}
+        <input
+          ref={inputRef}
+          type="text"
+          value={value}
+          onChange={handlePriceInputChange}
+          className="focus:ring-blue-500 w-24 border-0 bg-transparent p-0 text-right text-xs focus:ring-2 focus:ring-offset-2 group-[.is-dragging]:text-white"
+          onKeyDown={handleInputKeydown}
+        />
+      </div>
     </form>
   );
 }

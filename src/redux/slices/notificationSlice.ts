@@ -34,6 +34,15 @@ const notificationSlice = createSlice({
         message: action.payload.message,
       };
     },
+    setSuccessNotification: (state, action: PayloadAction<TitleAndMessage>) => {
+      return {
+        ...state,
+        show: true,
+        title: action.payload.title,
+        message: action.payload.message,
+        style: 'success',
+      };
+    },
     setErrorNotification: (state, action: PayloadAction<TitleAndMessage>) => {
       return {
         ...state,
@@ -46,7 +55,11 @@ const notificationSlice = createSlice({
   },
 });
 
-export const { hideNotification, setNotification, setErrorNotification } =
-  notificationSlice.actions;
+export const {
+  hideNotification,
+  setNotification,
+  setErrorNotification,
+  setSuccessNotification,
+} = notificationSlice.actions;
 
 export const notificationReducer = notificationSlice.reducer;
