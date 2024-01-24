@@ -4,41 +4,54 @@ import { DataTable } from '@/ui/compilation-table/data-table';
 import { Login } from '@/ui/login';
 import { EmptyListMessage } from '@/ui/empty-list-message';
 import { fetchCookies } from '@/redux/slices/authSlice';
-import {
-  fetchInitialState,
-  setRowSelection,
-  setSorting,
-  setDataOrder,
-  setColumnVisibility,
-} from '@/redux/slices/tableSlice';
 import { columns } from '@/ui/compilation-table/columns';
+import {
+  useGetTableQuery,
+  useUpdateColumnVisibilityMutation,
+  useUpdateDataOrderMutation,
+  useUpdateRowSelectionMutation,
+  useUpdateSortingMutation,
+} from '@/redux/services/table';
 
 export function ExtensionApp() {
-  const isLoggedIn = useAppSelector((state) => state.auth.isLoggedIn);
-  const { data, sorting, rowSelection, columnVisibility } = useAppSelector(
-    (state) => state.table
-  );
-
+  const { isLoggedIn } = useAppSelector((state) => state.auth);
+  const [updateDataOrder] = useUpdateDataOrderMutation();
+  const [updateSorting] = useUpdateSortingMutation();
+  const [updateRowSelection] = useUpdateRowSelectionMutation();
+  const [updateColumnVisibility] = useUpdateColumnVisibilityMutation();
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    Promise.all([dispatch(fetchCookies()), dispatch(fetchInitialState())]);
+    (async () => {
+      await dispatch(fetchCookies());
+    })();
   }, [dispatch]);
+
+  const { data: table } = useGetTableQuery();
+  if (!table) return null;
+
+  const { data, sorting, rowSelection, columnVisibility } = table;
 
   const tableOrEmptyMessage = data.length ? (
     <DataTable
       data={data}
       columns={columns}
-      onDragEnd={(value) => dispatch(setDataOrder(value))}
+      onDragEnd={(value) => {
+        updateDataOrder(value);
+      }}
       sorting={sorting}
-      onSortingChange={(newVal) => dispatch(setSorting(newVal))}
+      onSortingChange={(newVal) => {
+        updateSorting(newVal);
+      }}
       rowSelection={rowSelection}
-      onRowSelectionChange={(newVal) => dispatch(setRowSelection(newVal))}
+      onRowSelectionChange={(newVal) => {
+        updateRowSelection(newVal);
+      }}
       getRowId={(originalRow) => originalRow.id}
       columnVisibility={columnVisibility}
-      onColumnVisibilityChange={(newVal) =>
-        dispatch(setColumnVisibility(newVal))
-      }
+      onColumnVisibilityChange={(newVal) => {
+        updateColumnVisibility(newVal);
+      }}
     />
   ) : (
     <EmptyListMessage />

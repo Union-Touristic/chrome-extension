@@ -1,11 +1,9 @@
-import type { Tour } from '@/lib/db/schema';
-import type { TableMessenger } from '@/lib/definitions';
 import {
   collectTourOptions,
   createAddButton,
   createTTdElement,
 } from './helpers';
-import { getDataFromStorage } from '@/api/chrome';
+import { addDataToTable, getTableStateFromStorage } from '@/api/chrome';
 
 console.log('TOURVISOR content script works!');
 console.log('Must reload extension for modifications to take effect.');
@@ -138,27 +136,21 @@ function handleTTBodyElementMutation(
     );
     if (!tourOptions) throw new Error('tourOptions does not exist');
 
-    function handleButtonClick(e: MouseEvent) {
+    async function handleButtonClick(e: MouseEvent) {
       e.stopPropagation();
 
       button.classList.add('tour-collector-button--added');
       button.disabled = true;
 
-      chrome.runtime
-        .sendMessage<TableMessenger, Tour[]>({
-          type: 'add',
-          data: [tourOptions],
-        })
-        .then((tours) => {
-          console.log(tours);
-        });
+      await addDataToTable(tourOptions);
     }
 
     // if this tour is already in chrome storage
     // then make button with '--added' css class and make it disabled
     // do not add event listeneres
-    getDataFromStorage().then((toursInStorage) => {
-      toursInStorage.forEach((tour) => {
+
+    getTableStateFromStorage().then(({ data }) => {
+      data.forEach((tour) => {
         if (tour.id === tourOptions.id) {
           button.classList.add('tour-collector-button--added');
           button.disabled = true;
@@ -166,7 +158,6 @@ function handleTTBodyElementMutation(
         }
       });
     });
-
     button.addEventListener('click', handleButtonClick);
 
     TTdElement.appendChild(button);

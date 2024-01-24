@@ -2,18 +2,19 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type {
   TourWithIdAndPrice,
   ReorderStartEndIndexes,
-} from '@/lib/definitions';
-import { Tour } from '@/lib/db/schema';
-import {
+  TableState,
   SortingState,
   RowSelectionState,
-  VisibilityState,
-} from '@tanstack/react-table';
+  ColumnVisibilityState,
+} from '@/lib/definitions';
+import { Tour } from '@/lib/db/schema';
 import {
   getColumnVisibilityFromStorage,
   getDataFromStorage,
   getRowSelectionFromStorage,
   getSortingFromStorage,
+  // getTableStateFromStorage,
+  // setTableStateInStorage,
   updateColumnVisibilityStorage,
   updateDataStorage,
   updateRowSelectionStorage,
@@ -21,14 +22,7 @@ import {
 } from '@/api/chrome';
 import { reorder, sort } from '@/lib/utils';
 
-export interface TableState {
-  data: Tour[];
-  sorting: SortingState;
-  rowSelection: RowSelectionState;
-  columnVisibility: VisibilityState;
-}
-
-const initialState: TableState = {
+export const initialState: TableState = {
   data: [],
   sorting: [],
   rowSelection: {},
@@ -124,6 +118,7 @@ export const setDataOrder = createAsyncThunk(
   'table/setDataOrder',
   async ({ startIndex, endIndex }: ReorderStartEndIndexes, thunkApi) => {
     try {
+      thunkApi.getState();
       const fetchedData = await getDataFromStorage();
       const nextData = reorder(fetchedData, startIndex, endIndex);
       const [data, sorting] = await Promise.all([
@@ -168,10 +163,10 @@ export const removeTour = createAsyncThunk(
 
 export const setColumnVisibility = createAsyncThunk(
   'table/setColumnVisibility',
-  async (receivedColumnVisibility: VisibilityState, thunkApi) => {
+  async (incomingColumnVisibilityState: ColumnVisibilityState, thunkApi) => {
     try {
       const columnVisibility = await updateColumnVisibilityStorage(
-        receivedColumnVisibility
+        incomingColumnVisibilityState
       );
       return { columnVisibility };
     } catch (error) {

@@ -1,9 +1,147 @@
 import { Tour } from '@/lib/db/schema';
 import {
+  ColumnVisibilityState,
+  ReorderStartEndIndexes,
   RowSelectionState,
   SortingState,
-  VisibilityState,
-} from '@tanstack/react-table';
+  TableState,
+  TourWithIdAndPrice,
+} from '@/lib/definitions';
+import { reorder, sort } from '@/lib/utils';
+
+export const tableInitialState: TableState = {
+  data: [],
+  sorting: [],
+  rowSelection: {},
+  columnVisibility: {},
+};
+
+export async function getTableStateFromStorage(): Promise<TableState> {
+  const storage = await chrome.storage.local.get();
+  const tableState: TableState | undefined = storage['tableState'];
+
+  if (tableState === undefined) {
+    await setTableStateInStorage(tableInitialState); // TODO: maybe delete it
+    return tableInitialState;
+  }
+
+  return tableState;
+}
+
+export async function setTableStateInStorage(nextState: TableState) {
+  await chrome.storage.local.set({ tableState: nextState });
+}
+
+export async function addDataToTable(incomingData: Tour) {
+  const tableState = await getTableStateFromStorage();
+  const { data } = tableState;
+
+  const nextState: TableState = {
+    ...tableState,
+    data: [...data, incomingData],
+    sorting: tableInitialState['sorting'],
+  };
+
+  await setTableStateInStorage(nextState);
+}
+
+export async function updateDataOrderInTable({
+  startIndex,
+  endIndex,
+}: ReorderStartEndIndexes) {
+  const tableState = await getTableStateFromStorage();
+  const nextData = reorder(tableState.data, startIndex, endIndex);
+  const nextState: TableState = {
+    ...tableState,
+    data: nextData,
+    sorting: tableInitialState['sorting'],
+  };
+  await setTableStateInStorage(nextState);
+  return nextState;
+}
+
+export async function updateSortingInTable(incomingSortingState: SortingState) {
+  const tableState = await getTableStateFromStorage();
+  const nextData = sort(tableState.data, incomingSortingState);
+  const nextState: TableState = {
+    ...tableState,
+    data: nextData,
+    sorting: incomingSortingState,
+  };
+  await setTableStateInStorage(nextState);
+  return nextState;
+}
+
+export async function updateRowSelectionInTable(
+  incomingRowSelection: RowSelectionState
+) {
+  const tableState = await getTableStateFromStorage();
+  const nextState: TableState = {
+    ...tableState,
+    rowSelection: incomingRowSelection,
+  };
+  await setTableStateInStorage(nextState);
+  return nextState;
+}
+
+export async function updateColumnVisibility(
+  incomingColumnVisibility: ColumnVisibilityState
+) {
+  const tableState = await getTableStateFromStorage();
+  const nextState: TableState = {
+    ...tableState,
+    columnVisibility: incomingColumnVisibility,
+  };
+  await setTableStateInStorage(nextState);
+  return nextState;
+}
+
+export async function removeItemDataInTable(incomingData: string | string[]) {
+  const tableState = await getTableStateFromStorage();
+  const nextData = tableState.data.filter(
+    (item) => !incomingData.includes(item.id)
+  );
+  const nextRowSelection = Object.fromEntries(
+    Object.entries(tableState.rowSelection).filter(
+      (row) => !incomingData.includes(row[0])
+    )
+  );
+  const nextState: TableState = {
+    ...tableState,
+    data: nextData,
+    rowSelection: nextRowSelection,
+  };
+
+  await setTableStateInStorage(nextState);
+  return nextState;
+}
+
+export async function updateItemInTable(incomingData: TourWithIdAndPrice) {
+  const tableState = await getTableStateFromStorage();
+  const nextData = tableState.data.map((item) => {
+    if (item.id === incomingData.id)
+      return { ...item, price: incomingData['price'] };
+    return item;
+  });
+  const nextState: TableState = {
+    ...tableState,
+    data: nextData,
+    sorting: tableInitialState['sorting'],
+  };
+
+  await setTableStateInStorage(nextState);
+  return nextState;
+}
+
+export async function clearTable() {
+  const tableState = await getTableStateFromStorage();
+  const nextState: TableState = {
+    ...tableInitialState,
+    columnVisibility: tableState['columnVisibility'],
+  };
+  await setTableStateInStorage(nextState);
+  return nextState;
+}
 
 export const getDataFromStorage = async (): Promise<Tour[]> => {
   const storage = await chrome.storage.local.get('tours');
@@ -53,17 +191,17 @@ export const updateSortingStorage = async (
   return sorting;
 };
 
-export async function getColumnVisibilityFromStorage(): Promise<VisibilityState> {
+export async function getColumnVisibilityFromStorage(): Promise<ColumnVisibilityState> {
   const storage = await chrome.storage.local.get('columnVisibility');
-  const columnVisibility: VisibilityState | undefined =
+  const columnVisibility: ColumnVisibilityState | undefined =
     storage['columnVisibility'];
   if (columnVisibility === undefined) return {};
   return columnVisibility;
 }
 
 export async function updateColumnVisibilityStorage(
-  columnVisibility: VisibilityState
-): Promise<VisibilityState> {
+  columnVisibility: ColumnVisibilityState
+): Promise<ColumnVisibilityState> {
   await chrome.storage.local.set({ columnVisibility });
   return columnVisibility;
 }

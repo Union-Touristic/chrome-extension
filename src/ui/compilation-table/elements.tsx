@@ -21,17 +21,18 @@ import {
 import type { Tour, TourInsert } from '@/lib/db/schema';
 import { TourWithIdAndPrice } from '@/lib/definitions';
 import { Loader2 } from 'lucide-react';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import {
-  removeTour,
-  setTourPrice,
-  resetTable,
-} from '@/redux/slices/tableSlice';
+import { useAppDispatch } from '@/redux/hooks';
 import { Column } from '@tanstack/react-table';
 import {
   setErrorNotification,
   setNotification,
 } from '@/redux/slices/notificationSlice';
+import {
+  useClearTableMutation,
+  useGetTableQuery,
+  useRemoveItemDataMutation,
+  useUpdateItemMutation,
+} from '@/redux/services/table';
 
 type InputCheckboxProps = {
   checked: boolean | 'indeterminate';
@@ -82,10 +83,12 @@ export function DeleteTourButton({
   className,
   children,
 }: DeleteTourButtonProps) {
-  const dispatch = useAppDispatch();
+  const { data: table } = useGetTableQuery();
+  const [removeTour] = useRemoveItemDataMutation();
+  if (!table) return null;
 
   function handleDeleteTour() {
-    dispatch(removeTour(tourId));
+    removeTour(tourId);
   }
 
   return (
@@ -155,13 +158,16 @@ export function TableTopBarDeleteButton({
   className,
   children,
 }: TableTopBarDeleteButtonProps) {
-  const { rowSelection } = useAppSelector((state) => state.table);
-  const dispatch = useAppDispatch();
+  const { data: table } = useGetTableQuery();
+  const [removeItemData] = useRemoveItemDataMutation();
+  if (!table) return null;
+
+  const { rowSelection } = table;
   const rowSelectionArray = Object.entries(rowSelection);
 
   const handleDeleteButtonClick = async () => {
     const rowIds = rowSelectionArray.map((value) => value[0]);
-    dispatch(removeTour(rowIds));
+    removeItemData(rowIds);
   };
 
   return (
@@ -189,15 +195,14 @@ export function TableTopBarCopyButton({
   children,
 }: TableTopBarCopyButtonProps) {
   const [copied, setCopied] = React.useState(false);
-  const { rowSelection, data } = useAppSelector((state) => state.table);
+  const { data: table } = useGetTableQuery();
+  if (!table) return null;
+  const { data, rowSelection } = table;
 
   const rowSelectionArray = Object.entries(rowSelection);
 
   async function handleCopyButtonClick() {
-    const dataToCopy = data.filter(
-      (item) => rowSelection[item.id]
-      // table.selectedRows.includes(item.id)
-    );
+    const dataToCopy = data.filter((item) => rowSelection[item.id]);
     const text = toursArrayToText(dataToCopy);
 
     await setClipboard(text);
@@ -231,8 +236,8 @@ export function TableTopBarCopyButton({
 type TourEditPriceProps = TourWithIdAndPrice;
 
 export function TourEditPrice({ id, price }: TourEditPriceProps) {
+  const [updatePrice] = useUpdateItemMutation();
   const [value, setValue] = React.useState(frenchFormatter.format(price));
-  const dispatch = useAppDispatch();
   const initialPriceRef = React.useRef(price);
   const inputRef = React.useRef<HTMLInputElement | null>(null);
 
@@ -261,7 +266,7 @@ export function TourEditPrice({ id, price }: TourEditPriceProps) {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const updatedPrice = Number(inputRef.current?.value.replace(/\s/g, ''));
-    dispatch(setTourPrice({ id, price: updatedPrice }));
+    updatePrice({ id, price: updatedPrice });
     inputRef.current?.blur();
   };
 
@@ -323,16 +328,20 @@ export function SuccessNotificationMessage() {
 }
 
 export function UpdateButton() {
+  const { data: table } = useGetTableQuery();
+  const [clearTable] = useClearTableMutation();
   const [isLoading, setIsLoading] = React.useState(false);
-  const data = useAppSelector((state) => state.table.data);
   const dispatch = useAppDispatch();
+
+  if (!table) return null;
 
   async function handleSaveButtonClick() {
     try {
       setIsLoading(true);
+      if (!table) return null;
 
       // Format tour before send
-      const toursToInsert: TourInsert[] = data.map(
+      const toursToInsert: TourInsert[] = table.data.map(
         ({ id, occupancy, ...rest }) => {
           return {
             ...rest,
@@ -353,7 +362,6 @@ export function UpdateButton() {
       );
 
       await delay(300);
-      setIsLoading(() => false);
 
       if (response.status === 201) {
         dispatch(
@@ -363,7 +371,7 @@ export function UpdateButton() {
           })
         );
 
-        dispatch(resetTable());
+        await clearTable();
       }
 
       if (response.status === 400) {
@@ -419,6 +427,8 @@ export function UpdateButton() {
           })
         );
       }
+    } finally {
+      setIsLoading(() => false);
     }
   }
 
