@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import { ExtensionApp } from './ExtensionApp';
+import { PopupApp } from './PopupApp';
 import './index.css';
 import { Notification } from '@/ui/notification';
 import { store } from '@/redux/store';
@@ -10,7 +10,7 @@ const root = createRoot(container!); // createRoot(container!) if you use TypeSc
 
 root.render(
   <Provider store={store}>
-    <ExtensionApp />
+    <PopupApp />
     <Notification />
   </Provider>
 );

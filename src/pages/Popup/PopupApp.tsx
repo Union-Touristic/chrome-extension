@@ -13,7 +13,7 @@ import {
   useUpdateSortingMutation,
 } from '@/redux/services/table';
 
-export function ExtensionApp() {
+export function PopupApp() {
   const { isLoggedIn } = useAppSelector((state) => state.auth);
   const [updateDataOrder] = useUpdateDataOrderMutation();
   const [updateSorting] = useUpdateSortingMutation();
