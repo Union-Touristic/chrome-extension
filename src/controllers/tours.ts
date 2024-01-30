@@ -3,6 +3,7 @@ import {
   deleteDataItemInStorage,
   getDataFromStorage,
   getRowSelectionFromStorage,
+  setBadgeNumber,
   updateDataItemInStorage,
   updateRowSelectionStorage,
   updateSortingStorage,
@@ -20,6 +21,9 @@ export async function toursController(
         updateSortingStorage(initialTableSorting),
         addToursToStorage(message.payload),
       ]);
+
+      await setBadgeNumber(data.length);
+
       sendResponse({ sorting, data });
       break;
     }
@@ -51,8 +55,10 @@ export async function toursController(
         )
       );
 
-      const rowSelection =
-        await updateRowSelectionStorage(filteredRowSelection);
+      const [rowSelection] = await Promise.all([
+        updateRowSelectionStorage(filteredRowSelection),
+        setBadgeNumber(data.length),
+      ]);
 
       sendResponse({
         data,

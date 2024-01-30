@@ -17,6 +17,8 @@ import type {
 } from '@/lib/definitions';
 import { Tour } from '@/lib/db/schema';
 import { initialTableState } from '@/lib/consts';
+import { setNotification } from './notificationSlice';
+import { SuccessNotificationMessage } from '@/ui/compilation-table/elements';
 
 export const initialState = initialTableState;
 
@@ -49,6 +51,12 @@ export const resetTable = createAsyncThunk(
       };
       const { data, sorting, rowSelection } =
         await chrome.runtime.sendMessage(message);
+      thunkApi.dispatch(
+        setNotification({
+          title: 'Подборка успешно сохранена',
+          message: <SuccessNotificationMessage />,
+        })
+      );
       return { data, sorting, rowSelection };
     } catch (error) {
       return thunkApi.rejectWithValue(error);

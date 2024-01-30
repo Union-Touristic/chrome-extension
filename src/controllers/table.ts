@@ -3,6 +3,7 @@ import {
   getDataFromStorage,
   getRowSelectionFromStorage,
   getSortingFromStorage,
+  setBadgeNumber,
   updateColumnVisibilityStorage,
   updateDataStorage,
   updateRowSelectionStorage,
@@ -78,6 +79,8 @@ export async function tableController(
         updateSortingStorage(initialTableSorting),
         updateRowSelectionStorage(initialTableRowSelection),
       ]);
+
+      await setBadgeNumber(data.length);
 
       sendResponse({ data, sorting, rowSelection });
       break;

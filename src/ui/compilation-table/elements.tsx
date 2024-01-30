@@ -25,7 +25,6 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { Column } from '@tanstack/react-table';
 import {
   setErrorNotification,
-  setNotification,
   setSuccessNotification,
 } from '@/redux/slices/notificationSlice';
 import { CheckIcon, ResetIcon } from '@radix-ui/react-icons';
@@ -399,14 +398,7 @@ export function UpdateButton() {
       await delay(300);
 
       if (response.status === 201) {
-        dispatch(
-          setNotification({
-            title: 'Подборка успешно сохранена',
-            message: <SuccessNotificationMessage />,
-          })
-        );
-
-        dispatch(resetTable);
+        dispatch(resetTable());
       }
 
       if (response.status === 400) {

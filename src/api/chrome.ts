@@ -233,3 +233,14 @@ export async function updateColumnVisibilityStorage(
   await chrome.storage.local.set({ columnVisibility });
   return columnVisibility;
 }
+
+// Badge api
+export async function setBadgeNumber(value: number) {
+  if (value <= 0) {
+    await chrome.action.setBadgeText({ text: '' });
+    return value;
+  }
+
+  await chrome.action.setBadgeText({ text: String(value) });
+  return value;
+}

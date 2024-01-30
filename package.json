@@ -1,6 +1,6 @@
 {
   "name": "tour-collector",
-  "version": "6.0.0",
+  "version": "6.0.1",
   "description": "A chrome extension to collect travel package from https://tourvisor.ru",
   "license": "MIT",
   "repository": {
