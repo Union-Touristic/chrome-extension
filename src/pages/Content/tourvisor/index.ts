@@ -1,9 +1,11 @@
+import { Tour } from '@/lib/db/schema';
 import {
   collectTourOptions,
   createAddButton,
   createTTdElement,
 } from './helpers';
 import { addDataToTable, getTableStateFromStorage } from '@/api/chrome';
+import { CreateTourMessage, RetrieveToursMessage } from '@/lib/definitions';
 
 console.log('TOURVISOR content script works!');
 console.log('Must reload extension for modifications to take effect.');
@@ -35,44 +37,38 @@ function handleTVSearchFormElementMutation(mutation: MutationRecord) {
 
     // TVSearchResults exists ...
 
-    const TVHotelResultBodyContainerElement = element.querySelector(
-      '.TVHotelResultBodyContainer'
+    const TVResultListViewListElement = element.querySelector(
+      '.TVResultListViewList'
     );
 
-    if (!TVHotelResultBodyContainerElement) {
+    if (!TVResultListViewListElement) {
       return;
     }
 
-    // TVHotelResultBodyContainerElement exists ...
+    // TVResultListViewListElement exists ...
 
-    const TVHotelResultBodyContainerElementObserver = new MutationObserver(
+    const TVResultListViewListElementObserver = new MutationObserver(
       (mutationList) => {
         onElementChildListMutation(
           mutationList,
-          handleTVHotelResultBodyContainerElementMutation
+          handleTVResultListViewListElementMutation
         );
       }
     );
 
-    TVHotelResultBodyContainerElementObserver.observe(
-      TVHotelResultBodyContainerElement,
-      {
-        childList: true,
-      }
-    );
+    TVResultListViewListElementObserver.observe(TVResultListViewListElement, {
+      childList: true,
+    });
   });
 }
 
-function handleTVHotelResultBodyContainerElementMutation(
-  mutation: MutationRecord
-) {
+function handleTVResultListViewListElementMutation(mutation: MutationRecord) {
   // console.log('handleTVHotelResultBodyContainerElementMutation: ', mutation);
 
   mutation.addedNodes.forEach((node) => {
     const element = node as Element;
-
-    if (!element.classList.contains('blpricesort')) return;
-    // blpricesort exists ...
+    if (!element.classList.contains('TVResultListViewItem')) return;
+    // TVResultListViewItem exists ...
 
     const TVHotelResulItemInfoElement = element.querySelector(
       '.TVHotelResulItemInfo'
@@ -139,18 +135,31 @@ function handleTTBodyElementMutation(
     async function handleButtonClick(e: MouseEvent) {
       e.stopPropagation();
 
-      button.classList.add('tour-collector-button--added');
-      button.disabled = true;
+      const message: CreateTourMessage = {
+        type: 'tours',
+        action: 'create',
+        payload: [tourOptions],
+      };
 
-      await addDataToTable(tourOptions);
+      chrome.runtime.sendMessage(message, () => {
+        button.classList.add('tour-collector-button--added');
+        button.disabled = true;
+      });
+
+      // await addDataToTable(tourOptions);
     }
 
     // if this tour is already in chrome storage
     // then make button with '--added' css class and make it disabled
     // do not add event listeneres
 
-    getTableStateFromStorage().then(({ data }) => {
-      data.forEach((tour) => {
+    const message: RetrieveToursMessage = {
+      type: 'tours',
+      action: 'retrieve',
+    };
+
+    chrome.runtime.sendMessage(message, ({ data }) => {
+      data.forEach((tour: Tour) => {
         if (tour.id === tourOptions.id) {
           button.classList.add('tour-collector-button--added');
           button.disabled = true;
@@ -158,6 +167,16 @@ function handleTTBodyElementMutation(
         }
       });
     });
+
+    // getTableStateFromStorage().then(({ data }) => {
+    //   data.forEach((tour) => {
+    //     if (tour.id === tourOptions.id) {
+    //       button.classList.add('tour-collector-button--added');
+    //       button.disabled = true;
+    //       button.removeEventListener('click', handleButtonClick);
+    //     }
+    //   });
+    // });
     button.addEventListener('click', handleButtonClick);
 
     TTdElement.appendChild(button);

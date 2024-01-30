@@ -142,7 +142,7 @@ export async function clearTable() {
   await setTableStateInStorage(nextState);
   return nextState;
 }
-
+// This api for messaging
 export const getDataFromStorage = async (): Promise<Tour[]> => {
   const storage = await chrome.storage.local.get('tours');
   const data: Tour[] | undefined = storage['tours'];
@@ -153,6 +153,34 @@ export const getDataFromStorage = async (): Promise<Tour[]> => {
 export const addToursToStorage = async (data: Tour[]): Promise<Tour[]> => {
   const fetchedData = await getDataFromStorage();
   const updatedTours = [...fetchedData, ...data];
+  await chrome.storage.local.set({ tours: updatedTours });
+  return updatedTours;
+};
+
+export const updateDataItemInStorage = async (
+  incomingData: TourWithIdAndPrice
+) => {
+  const fetchedData = await getDataFromStorage();
+
+  const updatedTours = fetchedData.map((item) => {
+    if (item.id === incomingData.id)
+      return { ...item, price: incomingData['price'] };
+    return item;
+  });
+
+  await chrome.storage.local.set({ tours: updatedTours });
+  return updatedTours;
+};
+
+export const deleteDataItemInStorage = async (
+  incomingData: Tour['id'] | Tour['id'][]
+) => {
+  const fetchedData = await getDataFromStorage();
+
+  const updatedTours = fetchedData.filter(
+    (item) => !incomingData.includes(item.id)
+  );
+
   await chrome.storage.local.set({ tours: updatedTours });
   return updatedTours;
 };

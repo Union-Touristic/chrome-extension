@@ -21,20 +21,19 @@ import {
 import type { Tour, TourInsert } from '@/lib/db/schema';
 import { TourWithIdAndPrice } from '@/lib/definitions';
 import { Loader2 } from 'lucide-react';
-import { useAppDispatch } from '@/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { Column } from '@tanstack/react-table';
 import {
   setErrorNotification,
   setNotification,
   setSuccessNotification,
 } from '@/redux/slices/notificationSlice';
-import {
-  useClearTableMutation,
-  useGetTableQuery,
-  useRemoveItemDataMutation,
-  useUpdateItemMutation,
-} from '@/redux/services/table';
 import { CheckIcon, ResetIcon } from '@radix-ui/react-icons';
+import {
+  removeTour,
+  resetTable,
+  setTourPrice,
+} from '@/redux/slices/tableSlice';
 
 type InputCheckboxProps = {
   checked: boolean | 'indeterminate';
@@ -85,12 +84,9 @@ export function DeleteTourButton({
   className,
   children,
 }: DeleteTourButtonProps) {
-  const { data: table } = useGetTableQuery();
-  const [removeTour] = useRemoveItemDataMutation();
-  if (!table) return null;
-
-  function handleDeleteTour() {
-    removeTour(tourId);
+  const dispatch = useAppDispatch();
+  async function handleDeleteTour() {
+    dispatch(removeTour(tourId));
   }
 
   return (
@@ -160,16 +156,14 @@ export function TableTopBarDeleteButton({
   className,
   children,
 }: TableTopBarDeleteButtonProps) {
-  const { data: table } = useGetTableQuery();
-  const [removeItemData] = useRemoveItemDataMutation();
-  if (!table) return null;
+  const dipatch = useAppDispatch();
+  const { rowSelection } = useAppSelector((state) => state.table);
 
-  const { rowSelection } = table;
   const rowSelectionArray = Object.entries(rowSelection);
 
   const handleDeleteButtonClick = async () => {
     const rowIds = rowSelectionArray.map((value) => value[0]);
-    removeItemData(rowIds);
+    dipatch(removeTour(rowIds));
   };
 
   return (
@@ -197,9 +191,7 @@ export function TableTopBarCopyButton({
   children,
 }: TableTopBarCopyButtonProps) {
   const [copied, setCopied] = React.useState(false);
-  const { data: table } = useGetTableQuery();
-  if (!table) return null;
-  const { data, rowSelection } = table;
+  const { data, rowSelection } = useAppSelector((state) => state.table);
 
   const rowSelectionArray = Object.entries(rowSelection);
 
@@ -238,7 +230,6 @@ export function TableTopBarCopyButton({
 type TourEditPriceProps = TourWithIdAndPrice;
 
 export function TourEditPrice({ id, price }: TourEditPriceProps) {
-  const [updatePrice] = useUpdateItemMutation();
   const [value, setValue] = React.useState(frenchFormatter.format(price));
   const initialPriceRef = React.useRef(price);
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -279,8 +270,10 @@ export function TourEditPrice({ id, price }: TourEditPriceProps) {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const updatedPrice = Number(inputRef.current?.value.replace(/\s/g, ''));
+
     try {
-      await updatePrice({ id, price: updatedPrice });
+      dispatch(setTourPrice({ id, price: updatedPrice }));
+
       inputRef.current?.blur();
       initialPriceRef.current = updatedPrice;
       setIsControlsShowing(false);
@@ -374,20 +367,16 @@ export function SuccessNotificationMessage() {
 }
 
 export function UpdateButton() {
-  const { data: table } = useGetTableQuery();
-  const [clearTable] = useClearTableMutation();
   const [isLoading, setIsLoading] = React.useState(false);
   const dispatch = useAppDispatch();
-
-  if (!table) return null;
+  const { data } = useAppSelector((state) => state.table);
 
   async function handleSaveButtonClick() {
     try {
       setIsLoading(true);
-      if (!table) return null;
 
       // Format tour before send
-      const toursToInsert: TourInsert[] = table.data.map(
+      const toursToInsert: TourInsert[] = data.map(
         ({ id, occupancy, ...rest }) => {
           return {
             ...rest,
@@ -417,7 +406,7 @@ export function UpdateButton() {
           })
         );
 
-        await clearTable();
+        dispatch(resetTable);
       }
 
       if (response.status === 400) {
